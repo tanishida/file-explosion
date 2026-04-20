@@ -13,7 +13,14 @@ class FileManagerHelper {
         }
         return dir
     }
-    
+    // ▼ 🆕 追加：サムネイル専用の隠しディレクトリ
+    static var thumbnailDirectory: URL {
+        let dir = secretDirectory.appendingPathComponent(".thumbnails")
+        if !FileManager.default.fileExists(atPath: dir.path) {
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        return dir
+    }
     // 🗑️ 解読したファイル（キャッシュ）を「一時的」に置くディレクトリ
     static var cacheDirectory: URL {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("DecryptedCache")
@@ -33,6 +40,11 @@ class FileManagerHelper {
     // 🔍 復号した一時ファイル（キャッシュ）を保存・読み込みする場所を取得
     static func getCacheURL(for file: SecretFile) -> URL {
         return cacheDirectory.appendingPathComponent(file.url.lastPathComponent)
+    }
+    
+    // ▼ 🆕 追加：サムネイルファイルのURLを取得
+    static func getThumbnailURL(for file: SecretFile) -> URL {
+        return thumbnailDirectory.appendingPathComponent(file.url.lastPathComponent + ".thumb")
     }
     
     // 📥 保存されているすべての「秘密のファイル」を取得してリストにする

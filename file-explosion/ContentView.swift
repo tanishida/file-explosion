@@ -43,7 +43,7 @@ struct ContentView: View {
     
     // --- 表示・タブ関連 ---
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    @State private var timeRemainingString: String = ""
+    // 🗑️ timeRemainingString を削除して軽量化！
     @State private var selectedFolder = 0
     @State private var selectedMainTab = 0
     @Environment(\.scenePhase) var scenePhase
@@ -51,13 +51,14 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // ▼ 🆕 変更：1秒ごとに描画されるタイマー部分を「独立した専用ビュー」に分離しました！
                 VStack(spacing: 5) {
                     if isDestroyed { Text("【警告】システム停止").font(.subheadline).foregroundColor(.red) }
                     else if isUnlocked { Text("ロック解除中").font(.subheadline).foregroundColor(.green) }
                     else { Text(statusMessage).font(.subheadline).foregroundColor(.primary) }
                     
                     if !isDestroyed && lastAccessDate != 0 {
-                        Text(timeRemainingString).font(.system(.title2, design: .monospaced)).fontWeight(.bold).foregroundColor(isUnlocked ? .green : .red)
+                        TimerDisplayView(isUnlocked: isUnlocked)
                     }
                 }.padding(.vertical, 12).frame(maxWidth: .infinity).background(Color.secondary.opacity(0.05))
                 Divider()
@@ -86,18 +87,11 @@ struct ContentView: View {
                 if isUnlocked {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         if isSelectionMode {
-                            Button(action: {
-                                withAnimation {
-                                    isSelectionMode = false
-                                    selectedFileIDs.removeAll()
-                                }
-                            }) { Image(systemName: "xmark").font(.title3).fontWeight(.bold) }
+                            Button(action: { withAnimation { isSelectionMode = false; selectedFileIDs.removeAll() } }) { Image(systemName: "xmark").font(.title3).fontWeight(.bold) }
                         } else {
                             Menu {
                                 if selectedMainTab == 1 {
-                                    Button(action: {
-                                        withAnimation { isSelectionMode = true; selectedFileIDs.removeAll() }
-                                    }) { Label("選択", systemImage: "checkmark.circle") }
+                                    Button(action: { withAnimation { isSelectionMode = true; selectedFileIDs.removeAll() } }) { Label("選択", systemImage: "checkmark.circle") }
                                     Divider()
                                 }
                                 Button(action: { showingTimerSetup = true }) { Label("自爆タイマー", systemImage: "timer") }
@@ -115,21 +109,14 @@ struct ContentView: View {
             .fullScreenCover(isPresented: $showingGallery) { GalleryView(files: galleryFiles, currentIndex: galleryIndex) }
             .sheet(isPresented: $showShareSheet, onDismiss: { cleanupExportedFiles() }) { ShareSheet(activityItems: filesToShare) }
             .fullScreenCover(isPresented: $showingTimerSetup) { TimerSetupView() }
-            .alert("【警告】システムの初期化", isPresented: $showingResetConfirmation) {
-                Button("キャンセル", role: .cancel) { }; Button("初期化を実行", role: .destructive) { resetApp() }
-            } message: { Text("全てのデータが完全に消去されます。よろしいですか？\n※パスコード設定は維持されます。") }
-                .alert("削除の確認", isPresented: $showingMultiDeleteConfirm) {
-                    Button("キャンセル", role: .cancel) { }; Button("削除", role: .destructive) { deleteSelectedFiles() }
-                } message: { Text("選択したファイルを完全に削除しますか？") }
+            .alert("【警告】システムの初期化", isPresented: $showingResetConfirmation) { Button("キャンセル", role: .cancel) { }; Button("初期化を実行", role: .destructive) { resetApp() } } message: { Text("全てのデータが完全に消去されます。よろしいですか？\n※パスコード設定は維持されます。") }
+            .alert("削除の確認", isPresented: $showingMultiDeleteConfirm) { Button("キャンセル", role: .cancel) { }; Button("削除", role: .destructive) { deleteSelectedFiles() } } message: { Text("選択したファイルを完全に削除しますか？") }
         }
         .overlay {
             if isProcessing {
                 ZStack {
                     Color.black.opacity(0.4).ignoresSafeArea()
-                    VStack(spacing: 20) {
-                        ProgressView().scaleEffect(1.5).tint(.white)
-                        Text(processingMessage).font(.callout).fontWeight(.bold).foregroundColor(.white).multilineTextAlignment(.center)
-                    }.padding(30).background(Color.black.opacity(0.8)).cornerRadius(15)
+                    VStack(spacing: 20) { ProgressView().scaleEffect(1.5).tint(.white); Text(processingMessage).font(.callout).fontWeight(.bold).foregroundColor(.white).multilineTextAlignment(.center) }.padding(30).background(Color.black.opacity(0.8)).cornerRadius(15)
                 }
             }
         }
@@ -151,9 +138,7 @@ struct ContentView: View {
                 VStack(spacing: 20) {
                     Text("パスコードを入力").font(.headline)
                     PasscodeField(title: "4桁の数字", text: $inputPasscode)
-                    Button(action: {
-                        if inputPasscode == appPasscode { unlockSystem() } else { statusMessage = "❌ パスコード不一致"; inputPasscode = "" }
-                    }) { Text("解除する").font(.headline).foregroundColor(.white).padding().frame(width: 200).background(Color.orange).cornerRadius(10) }.disabled(inputPasscode.count < 4)
+                    Button(action: { if inputPasscode == appPasscode { unlockSystem() } else { statusMessage = "❌ パスコード不一致"; inputPasscode = "" } }) { Text("解除する").font(.headline).foregroundColor(.white).padding().frame(width: 200).background(Color.orange).cornerRadius(10) }.disabled(inputPasscode.count < 4)
                     Button("Face IDに戻る") { showPasscodeEntry = false }.font(.caption).foregroundColor(.gray)
                 }
             } else {
@@ -234,10 +219,7 @@ struct ContentView: View {
                                     self.showingGallery = true
                                 }
                             }
-                            if isSelectionMode {
-                                Image(systemName: selectedFileIDs.contains(file.id) ? "checkmark.circle.fill" : "circle")
-                                    .font(.title2).foregroundColor(selectedFileIDs.contains(file.id) ? .blue : .white).background(Circle().fill(Color.black.opacity(0.3))).padding(6).allowsHitTesting(false)
-                            }
+                            if isSelectionMode { Image(systemName: selectedFileIDs.contains(file.id) ? "checkmark.circle.fill" : "circle").font(.title2).foregroundColor(selectedFileIDs.contains(file.id) ? .blue : .white).background(Circle().fill(Color.black.opacity(0.3))).padding(6).allowsHitTesting(false) }
                         }
                     }
                 }.padding()
@@ -254,34 +236,68 @@ struct ContentView: View {
     func unlockSystem() { lastAccessDate = Date().timeIntervalSince1970; KeyManager.createAndSaveKey(); isUnlocked = true; faceIDFailCount = 0; showPasscodeEntry = false; inputPasscode = ""; refreshFiles() }
     func lockApp() { isUnlocked = false; secretFiles = []; FileManagerHelper.clearTempCache(); isSelectionMode = false; selectedFileIDs.removeAll(); showPasscodeEntry = false; inputPasscode = ""; faceIDFailCount = 0; statusMessage = "認証してください"; showingGallery = false }
     func refreshFiles() { secretFiles = FileManagerHelper.getAllSecretFiles() }
-    func checkTimeLimit() { if lastAccessDate == 0 || isDestroyed { return }; let passed = Date().timeIntervalSince1970 - lastAccessDate; if passed > timerLimitSeconds { isDestroyed = true; KeyManager.destroyKey(); FileManagerHelper.deleteAllFiles(); FileManagerHelper.clearTempCache() } else { let rem = max(0, timerLimitSeconds - passed); let format = String(localized: "%02d日 %02d:%02d:%02d"); timeRemainingString = String(format: format, Int(rem)/86400, (Int(rem)%86400)/3600, (Int(rem)%3600)/60, Int(rem)%60) } }
+    
+    // ▼ 🆕 変更：状態を監視し、時間が過ぎた時「だけ」システムを破壊する（UIの更新はしない）
+    func checkTimeLimit() {
+        if lastAccessDate == 0 || isDestroyed { return }
+        let passed = Date().timeIntervalSince1970 - lastAccessDate
+        if passed > timerLimitSeconds {
+            isDestroyed = true
+            KeyManager.destroyKey(); FileManagerHelper.deleteAllFiles(); FileManagerHelper.clearTempCache()
+        }
+    }
+    
     func batchDecryptAll() { let targets = secretFiles.filter { !FileManager.default.fileExists(atPath: FileManagerHelper.getCacheURL(for: $0).path) }; if targets.isEmpty { return }; isProcessing = true; var count = 0; processingMessage = "一括解読中... (0/\(targets.count))"; DispatchQueue.global(qos: .userInitiated).async { for file in targets { autoreleasepool { _ = KeyManager.decryptFile(inputURL: file.url, outputURL: FileManagerHelper.getCacheURL(for: file)) }; DispatchQueue.main.async { count += 1; processingMessage = "一括解読中... (\(count)/\(targets.count))" } }; DispatchQueue.main.async { isProcessing = false; refreshFiles() } } }
     func processSelectedPhotos() { guard !selectedItems.isEmpty else { return }; isProcessing = true; processingMessage = "極秘処理中...\n（そのままお待ちください）"; let items = selectedItems; selectedItems = []; DispatchQueue.global(qos: .userInitiated).async { for (index, item) in items.enumerated() { DispatchQueue.main.async { processingMessage = "極秘処理中... (\(index + 1)/\(items.count))" }; let semaphore = DispatchSemaphore(value: 0); let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "data"; item.loadTransferable(type: TempMediaFile.self) { result in if case .success(let media?) = result { autoreleasepool { KeyManager.createAndSaveKey(); _ = KeyManager.encryptFile(inputURL: media.url, outputURL: FileManagerHelper.generateNewFileURL(originalExtension: ext)); try? FileManager.default.removeItem(at: media.url) } }; semaphore.signal() }; semaphore.wait() }; DispatchQueue.main.async { refreshFiles(); isProcessing = false } } }
     func processImportedFiles(result: Result<[URL], Error>) { if case .success(let urls) = result { isProcessing = true; processingMessage = "極秘処理中..."; DispatchQueue.global(qos: .userInitiated).async { for (index, url) in urls.enumerated() { DispatchQueue.main.async { processingMessage = "極秘処理中... (\(index + 1)/\(urls.count))" }; autoreleasepool { if url.startAccessingSecurityScopedResource() { KeyManager.createAndSaveKey(); _ = KeyManager.encryptFile(inputURL: url, outputURL: FileManagerHelper.generateNewFileURL(originalExtension: url.pathExtension)); url.stopAccessingSecurityScopedResource() } } }; DispatchQueue.main.async { refreshFiles(); isProcessing = false } } } }
     func resetApp() { lastAccessDate = 0; isDestroyed = false; isUnlocked = false; secretFiles = []; KeyManager.destroyKey(); FileManagerHelper.deleteAllFiles(); FileManagerHelper.clearTempCache(); checkInitialSetup() }
 }
 
+// MARK: - 小さなUIパーツ
 struct SectionHeader: View { let title: LocalizedStringKey; var body: some View { Text(title).font(.caption).fontWeight(.bold).foregroundColor(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal) } }
 struct TempMediaFile: Transferable { let url: URL; static var transferRepresentation: some TransferRepresentation { FileRepresentation(importedContentType: .item) { received in let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "_" + received.file.lastPathComponent); try FileManager.default.copyItem(at: received.file, to: tempURL); return TempMediaFile(url: tempURL) } } }
 struct ShareSheet: UIViewControllerRepresentable { var activityItems: [Any]; func makeUIViewController(context: Context) -> UIActivityViewController { return UIActivityViewController(activityItems: activityItems, applicationActivities: nil) }; func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {} }
+
+// ▼ 🆕 追加：1秒ごとに更新される「文字だけ」を独立させた専用ビュー
+struct TimerDisplayView: View {
+    var isUnlocked: Bool
+    @AppStorage("lastAccessDate") private var lastAccessDate: Double = 0
+    @AppStorage("timerLimitSeconds") private var timerLimitSeconds: Double = 604800
+    @State private var timeRemainingString: String = ""
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    var body: some View {
+        Text(timeRemainingString)
+            .font(.system(.title2, design: .monospaced))
+            .fontWeight(.bold)
+            .foregroundColor(isUnlocked ? .green : .red)
+            .onReceive(timer) { _ in updateTime() }
+            .onAppear { updateTime() }
+    }
+    
+    func updateTime() {
+        if lastAccessDate == 0 { return }
+        let passed = Date().timeIntervalSince1970 - lastAccessDate
+        if passed > timerLimitSeconds {
+            timeRemainingString = "00日 00:00:00"
+        } else {
+            let rem = max(0, timerLimitSeconds - passed)
+            let format = String(localized: "%02d日 %02d:%02d:%02d")
+            timeRemainingString = String(format: format, Int(rem)/86400, (Int(rem)%86400)/3600, (Int(rem)%3600)/60, Int(rem)%60)
+        }
+    }
+}
 
 // MARK: - 自爆タイマー設定専用画面
 struct TimerSetupView: View {
     @Environment(\.dismiss) var dismiss
     @AppStorage("timerLimitSeconds") private var timerLimitSeconds: Double = 604800
     @AppStorage("lastAccessDate") private var lastAccessDate: Double = 0
-    
     @State private var tempTimerLimit: Double = 604800
     
-    // ▼ 🆕 追加：10分、30分、1ヶ月のオプションを追加！
     let options: [(title: LocalizedStringKey, value: Double)] = [
-        ("10分", 600),
-        ("30分", 1800),
-        ("1時間", 3600),
-        ("1日", 86400),
-        ("3日", 259200),
-        ("1週間", 604800),
-        ("1ヶ月", 2592000)
+        ("10分", 600), ("30分", 1800), ("1時間", 3600), ("1日", 86400),
+        ("3日", 259200), ("1週間", 604800), ("1ヶ月", 2592000)
     ]
     
     var body: some View {
@@ -291,12 +307,10 @@ struct TimerSetupView: View {
                 Text("自爆タイマー設定").font(.title2).bold()
                 Text("設定した期間アプリを開かなかった場合、\nすべての極秘データが自動的に消去されます。").font(.subheadline).foregroundColor(.secondary).multilineTextAlignment(.center).padding(.horizontal)
                 
-                ScrollView { // 選択肢が増えたのでスクロールできるように変更
+                ScrollView {
                     VStack(spacing: 12) {
                         ForEach(options, id: \.value) { option in
-                            Button(action: {
-                                tempTimerLimit = option.value
-                            }) {
+                            Button(action: { tempTimerLimit = option.value }) {
                                 HStack {
                                     Text(option.title).font(.headline).foregroundColor(tempTimerLimit == option.value ? .white : .primary)
                                     Spacer()
@@ -305,18 +319,14 @@ struct TimerSetupView: View {
                                 .padding().background(tempTimerLimit == option.value ? Color.red : Color.secondary.opacity(0.1)).cornerRadius(12)
                             }
                         }
-                    }
-                    .padding(.horizontal, 30)
-                    .padding(.top, 10)
+                    }.padding(.horizontal, 30).padding(.top, 10)
                 }
                 
                 Button(action: {
                     timerLimitSeconds = tempTimerLimit
                     lastAccessDate = Date().timeIntervalSince1970
                     dismiss()
-                }) {
-                    Text("保存して閉じる").font(.headline).foregroundColor(.white).padding().frame(maxWidth: .infinity).background(Color.blue).cornerRadius(12)
-                }.padding(.horizontal, 30).padding(.bottom, 20)
+                }) { Text("保存して閉じる").font(.headline).foregroundColor(.white).padding().frame(maxWidth: .infinity).background(Color.blue).cornerRadius(12) }.padding(.horizontal, 30).padding(.bottom, 20)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .navigationBarTrailing) { Button("閉じる") { dismiss() } } }

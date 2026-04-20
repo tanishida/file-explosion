@@ -1,33 +1,28 @@
 import Foundation
 import UniformTypeIdentifiers
 
-// UI側（ContentViewやGalleryView）でファイルを扱いやすくするための構造体
 struct SecretFile: Identifiable, Equatable {
-    let id = UUID()
+    let id: UUID
     let url: URL
+    let isImage: Bool
+    let isVideo: Bool
+    let isPDF: Bool
     
-    // ▼ ファイルの拡張子から、それが画像かどうかを自動判定する
-    var isImage: Bool {
+    init(url: URL) {
+        self.url = url
+        // ランダムなIDをやめ、ファイル名から固定のIDを生成（UIの再描画を防ぐ）
+        let uuidString = url.deletingPathExtension().lastPathComponent
+        self.id = UUID(uuidString: uuidString) ?? UUID()
+        
+        // ▼ 🆕 究極の軽量化：ファイル種類の判定を「作成時の1回」だけで終わらせる！
         if let type = UTType(filenameExtension: url.pathExtension) {
-            return type.conforms(to: .image)
+            self.isImage = type.conforms(to: .image)
+            self.isVideo = type.conforms(to: .movie) || type.conforms(to: .video) || type.conforms(to: .audiovisualContent)
+            self.isPDF = type.conforms(to: .pdf)
+        } else {
+            self.isImage = false
+            self.isVideo = false
+            self.isPDF = false
         }
-        return false
-    }
-    
-    // ▼ 動画かどうかを自動判定する
-    var isVideo: Bool {
-        if let type = UTType(filenameExtension: url.pathExtension) {
-            // .movie, .video, .audiovisualContent などを広くカバー
-            return type.conforms(to: .movie) || type.conforms(to: .video) || type.conforms(to: .audiovisualContent)
-        }
-        return false
-    }
-    
-    // ▼ PDFかどうかを自動判定する
-    var isPDF: Bool {
-        if let type = UTType(filenameExtension: url.pathExtension) {
-            return type.conforms(to: .pdf)
-        }
-        return false
     }
 }
