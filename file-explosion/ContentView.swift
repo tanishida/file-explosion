@@ -105,7 +105,7 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("Deadman Switch")
+            .navigationTitle("LimitBox")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isUnlocked {
@@ -246,7 +246,6 @@ struct ContentView: View {
                     ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
                         FolderChip(title: folder.name, icon: "folder.fill", customTint: .blue, isSelected: selectedAppFolderID == folder.id && !showingFavoritesOnly) { selectedAppFolderID = folder.id; showingFavoritesOnly = false }
                             .contextMenu {
-                                // ▼ 🆕 カスタムフォルダのコンテキストメニューに書き出しを追加！
                                 Button(action: {
                                     let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
                                     if !targets.isEmpty { selectedFileIDs = Set(targets.map { $0.id }); exportSelectedFiles() }
