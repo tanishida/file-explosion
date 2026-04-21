@@ -1,725 +1,832 @@
 {
-  "sourceLanguage" : "ja",
-  "strings" : {
-    "" : {
-
-    },
-    "【警告】システムの初期化" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[WARNING] System Initialization"
-          }
-        }
-      }
-    },
-    "【警告】システム停止" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[WARNING] System Halted"
-          }
-        }
-      }
-    },
-    "%02d日 %02d:%02d:%02d" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%02d days %02d:%02d:%02d"
-          }
-        }
-      }
-    },
-    "%lld / %lld" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld / %2$lld"
-          }
-        }
-      }
-    },
-    "%lld項目を選択" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld selected"
-          }
-        }
-      }
-    },
-    "❌ パスコード不一致" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "❌ Incorrect Passcode"
-          }
-        }
-      }
-    },
-    "1ヶ月" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Month"
-          }
-        }
-      }
-    },
-    "1日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Day"
-          }
-        }
-      }
-    },
-    "1時間" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Hour"
-          }
-        }
-      }
-    },
-    "1週間" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Week"
-          }
-        }
-      }
-    },
-    "3日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3 Days"
-          }
-        }
-      }
-    },
-    "4桁の数字" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "4-digit PIN"
-          }
-        }
-      }
-    },
-    "10分" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "10 Minutes"
-          }
-        }
-      }
-    },
-    "30分" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "30 Minutes"
-          }
-        }
-      }
-    },
-    "Deadman Switch" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Deadman Switch"
-          }
+    "sourceLanguage" : "ja",
+    "strings" : {
+        "" : {
+            
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "デッドマン・スイッチ"
-          }
+        "【警告】システムの初期化" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "[WARNING] System Initialization"
+                    }
+                }
+            }
+        },
+        "【警告】システム停止" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "[WARNING] System Halted"
+                    }
+                }
+            }
+        },
+        "%02d日 %02d:%02d:%02d" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "%02d days %02d:%02d:%02d"
+                    }
+                }
+            }
+        },
+        "%lld / %lld" : {
+            "localizations" : {
+                "ja" : {
+                    "stringUnit" : {
+                        "state" : "new",
+                        "value" : "%1$lld / %2$lld"
+                    }
+                },
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "%1$lld / %2$lld"
+                    }
+                }
+            }
+        },
+        "%lld項目を選択" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "%lld selected"
+                    }
+                }
+            }
+        },
+        "❌ パスコード不一致" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "❌ Incorrect Passcode"
+                    }
+                }
+            }
+        },
+        "1ヶ月" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "1 Month"
+                    }
+                }
+            }
+        },
+        "1日" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "1 Day"
+                    }
+                }
+            }
+        },
+        "1時間" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "1 Hour"
+                    }
+                }
+            }
+        },
+        "1週間" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "1 Week"
+                    }
+                }
+            }
+        },
+        "3日" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "3 Days"
+                    }
+                }
+            }
+        },
+        "4桁の数字" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "4-digit PIN"
+                    }
+                }
+            }
+        },
+        "10分" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "10 Minutes"
+                    }
+                }
+            }
+        },
+        "30分" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "30 Minutes"
+                    }
+                }
+            }
+        },
+        "Deadman Switch" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "needs_review",
+                        "value" : "Deadman Switch"
+                    }
+                },
+                "ja" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "デッドマン・スイッチ"
+                    }
+                }
+            }
+        },
+        "Face ID でロック解除" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Unlock with Face ID"
+                    }
+                }
+            }
+        },
+        "Face IDに戻る" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Return to Face ID"
+                    }
+                }
+            }
+        },
+        "PDF" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "PDF"
+                    }
+                }
+            }
+        },
+        "キャンセル" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Cancel"
+                    }
+                }
+            }
+        },
+        "このファイルを完全に削除しますか？" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Permanently delete this file?"
+                    }
+                }
+            }
+        },
+        "このフォルダは空です" : {
+            "extractionState" : "stale",
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "This folder is empty"
+                    }
+                }
+            }
+        },
+        "システムを再構築" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Rebuild System"
+                    }
+                }
+            }
+        },
+        "システムを初期化" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Initialize System"
+                    }
+                }
+            }
+        },
+        "システムを起動中..." : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Starting system..."
+                    }
+                }
+            }
+        },
+        "セキュリティ管理" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Security Management"
+                    }
+                }
+            }
+        },
+        "データは完全に消去されました。\n再構築が必要です。" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Data has been completely erased.\nRebuild required."
+                    }
+                }
+            }
+        },
+        "パスコードを使う" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Use Passcode"
+                    }
+                }
+            }
+        },
+        "パスコードを入力" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Enter Passcode"
+                    }
+                }
+            }
+        },
+        "パスコードを入力してください" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Please enter passcode"
+                    }
+                }
+            }
+        },
+        "パスコードを変更する" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Change Passcode"
+                    }
+                }
+            }
+        },
+        "パフォーマンス" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Performance"
+                    }
+                }
+            }
+        },
+        "ファイル" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Files"
+                    }
+                }
+            }
+        },
+        "フォルダ" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Folder"
+                    }
+                }
+            }
+        },
+        "フォルダ名" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Folder Name"
+                    }
+                }
+            }
+        },
+        "プレビュー非対応" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Preview not supported"
+                    }
+                }
+            }
+        },
+        "ロック解除中" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Unlocking..."
+                    }
+                }
+            }
+        },
+        "一括解読中... (%lld/%lld)" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Batch decrypting... (%lld/%lld)"
+                    }
+                }
+            }
+        },
+        "一括解読中... (0/%lld)" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Batch decrypting... (%lld/%lld)"
+                    }
+                }
+            }
+        },
+        "不一致です。最初からやり直し。" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Does not match. Start over."
+                    }
+                }
+            }
+        },
+        "他" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Other"
+                    }
+                }
+            }
+        },
+        "作成" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Create"
+                    }
+                }
+            }
+        },
+        "保存" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Save"
+                    }
+                }
+            }
+        },
+        "保存して閉じる" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Save & Close"
+                    }
+                }
+            }
+        },
+        "全てのデータが完全に消去されます。よろしいですか？\n※パスコード設定は維持されます。" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "All data will be completely erased. Are you sure?\n* Passcode settings will be preserved."
+                    }
+                }
+            }
+        },
+        "全ファイルを一括事前解読" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Pre-decrypt All Files"
+                    }
+                }
+            }
+        },
+        "写真" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Photos"
+                    }
+                }
+            }
+        },
+        "写真/動画" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Photos/Videos"
+                    }
+                }
+            }
+        },
+        "初期化を実行" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Execute Initialization"
+                    }
+                }
+            }
+        },
+        "初期設定" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Initial Setup"
+                    }
+                }
+            }
+        },
+        "削除" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Delete"
+                    }
+                }
+            }
+        },
+        "削除の確認" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Confirm Deletion"
+                    }
+                }
+            }
+        },
+        "動画" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Videos"
+                    }
+                }
+            }
+        },
+        "名前を変更" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Rename"
+                    }
+                }
+            }
+        },
+        "変更" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Change"
+                    }
+                }
+            }
+        },
+        "復号中..." : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Decrypting..."
+                    }
+                }
+            }
+        },
+        "戻る" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Back"
+                    }
+                }
+            }
+        },
+        "操作" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Controls"
+                    }
+                }
+            }
+        },
+        "数字4桁" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "4 digits"
+                    }
+                }
+            }
+        },
+        "新しいパスコード(4桁)" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "New Passcode (4 digits)"
+                    }
+                }
+            }
+        },
+        "新規フォルダ" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "New Folder"
+                    }
+                }
+            }
+        },
+        "書き出し" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Export"
+                    }
+                }
+            }
+        },
+        "未分類に戻す" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Move to Uncategorized"
+                    }
+                }
+            }
+        },
+        "極秘データの追加" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Add Top Secret Data"
+                    }
+                }
+            }
+        },
+        "極秘処理中..." : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Processing secret data..."
+                    }
+                }
+            }
+        },
+        "極秘処理中...\n（そのままお待ちください）" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Processing secret data...\n(Please wait)"
+                    }
+                }
+            }
+        },
+        "極秘処理中... (%lld/%lld)" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Processing secret data... (%lld/%lld)"
+                    }
+                }
+            }
+        },
+        "次へ" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Next"
+                    }
+                }
+            }
+        },
+        "確認のためもう一度" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Confirm Passcode"
+                    }
+                }
+            }
+        },
+        "移動" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Move"
+                    }
+                }
+            }
+        },
+        "移動先を選択" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Select Destination"
+                    }
+                }
+            }
+        },
+        "自爆タイマー" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Deadman Switch Timer"
+                    }
+                }
+            }
+        },
+        "自爆タイマー設定" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Deadman Switch Settings"
+                    }
+                }
+            }
+        },
+        "解読中..." : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Decrypting..."
+                    }
+                }
+            }
+        },
+        "解除する" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Unlock"
+                    }
+                }
+            }
+        },
+        "設定した期間アプリを開かなかった場合、\nすべての極秘データが自動的に消去されます。" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "If the app is not opened for the set period, all top-secret data will be automatically erased."
+                    }
+                }
+            }
+        },
+        "設定を完了" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Complete Setup"
+                    }
+                }
+            }
+        },
+        "認証してください" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Please authenticate"
+                    }
+                }
+            }
+        },
+        "認証失敗 (%lld/3)" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Authentication failed (%lld/3)"
+                    }
+                }
+            }
+        },
+        "選択" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Select"
+                    }
+                }
+            }
+        },
+        "選択したファイルを完全に削除しますか？" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Permanently delete selected files?"
+                    }
+                }
+            }
+        },
+        "閉じる" : {
+            "localizations" : {
+                "en" : {
+                    "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "Close"
+                    }
+                }
+            }
         }
-      }
     },
-    "Face ID でロック解除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlock with Face ID"
-          }
-        }
-      }
-    },
-    "Face IDに戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Return to Face ID"
-          }
-        }
-      }
-    },
-    "PDF" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PDF"
-          }
-        }
-      }
-    },
-    "キャンセル" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
-          }
-        }
-      }
-    },
-    "このフォルダは空です" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This folder is empty"
-          }
-        }
-      }
-    },
-    "システムを再構築" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rebuild System"
-          }
-        }
-      }
-    },
-    "システムを初期化" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Initialize System"
-          }
-        }
-      }
-    },
-    "セキュリティ管理" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Security Management"
-          }
-        }
-      }
-    },
-    "データは完全に消去されました。\n再構築が必要です。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Data has been completely erased.\nRebuild required."
-          }
-        }
-      }
-    },
-    "パスコードを使う" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use Passcode"
-          }
-        }
-      }
-    },
-    "パスコードを入力" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter Passcode"
-          }
-        }
-      }
-    },
-    "パスコードを入力してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter Passcode"
-          }
-        }
-      }
-    },
-    "パスコードを変更する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change Passcode"
-          }
-        }
-      }
-    },
-    "パフォーマンス" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Performance"
-          }
-        }
-      }
-    },
-    "ファイル" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Files"
-          }
-        }
-      }
-    },
-    "フォルダ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Folder"
-          }
-        }
-      }
-    },
-    "プレビュー非対応" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview not supported"
-          }
-        }
-      }
-    },
-    "ロック解除中" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlocking..."
-          }
-        }
-      }
-    },
-    "一括解読中... (%lld/%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batch decrypting... (%lld/%lld)"
-          }
-        }
-      }
-    },
-    "一括解読中... (0/%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batch decrypting... (%lld/%lld)"
-          }
-        }
-      }
-    },
-    "不一致です。最初からやり直し。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Does not match. Start over."
-          }
-        }
-      }
-    },
-    "他" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
-          }
-        }
-      }
-    },
-    "保存して閉じる" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save & Close"
-          }
-        }
-      }
-    },
-    "全てのデータが完全に消去されます。よろしいですか？\n※パスコード設定は維持されます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All data will be completely erased. Are you sure?\n* Passcode settings will be preserved."
-          }
-        }
-      }
-    },
-    "全ファイルを一括事前解読" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pre-decrypt All Files"
-          }
-        }
-      }
-    },
-    "写真" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photos"
-          }
-        }
-      }
-    },
-    "写真/動画" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photos/Videos"
-          }
-        }
-      }
-    },
-    "初期化を実行" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Execute Initialization"
-          }
-        }
-      }
-    },
-    "初期設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Initial Setup"
-          }
-        }
-      }
-    },
-    "削除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
-          }
-        }
-      }
-    },
-    "削除の確認" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirm Deletion"
-          }
-        }
-      }
-    },
-    "動画" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Videos"
-          }
-        }
-      }
-    },
-    "変更" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change"
-          }
-        }
-      }
-    },
-    "復号中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypting"
-          }
-        }
-      }
-    },
-    "戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
-          }
-        }
-      }
-    },
-    "操作" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controls"
-          }
-        }
-      }
-    },
-    "数字4桁" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "4 digits"
-          }
-        }
-      }
-    },
-    "新しいパスコード(4桁)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Passcode (4 digits)"
-          }
-        }
-      }
-    },
-    "書き出し" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export"
-          }
-        }
-      }
-    },
-    "極秘データの追加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Top Secret Data"
-          }
-        }
-      }
-    },
-    "極秘処理中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Processing secret data..."
-          }
-        }
-      }
-    },
-    "極秘処理中...\n（そのままお待ちください）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Processing secret data...\n(Please wait)"
-          }
-        }
-      }
-    },
-    "極秘処理中... (%lld/%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Processing secret data... (%lld/%lld)"
-          }
-        }
-      }
-    },
-    "次へ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
-          }
-        }
-      }
-    },
-    "確認のためもう一度" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirm Passcode"
-          }
-        }
-      }
-    },
-    "自爆タイマー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Timer"
-          }
-        }
-      }
-    },
-    "自爆タイマー設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Settings"
-          }
-        }
-      }
-    },
-    "解読中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypting..."
-          }
-        }
-      }
-    },
-    "解除する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlock"
-          }
-        }
-      }
-    },
-    "設定した期間アプリを開かなかった場合、\nすべての極秘データが自動的に消去されます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If the app is not opened for the set period, all top-secret data will be automatically erased."
-          }
-        }
-      }
-    },
-    "設定を完了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Complete Setup"
-          }
-        }
-      }
-    },
-    "認証してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please authenticate"
-          }
-        }
-      }
-    },
-    "認証失敗 (%lld/3)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Authentication failed (%lld/3)"
-          }
-        }
-      }
-    },
-    "選択" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select"
-          }
-        }
-      }
-    },
-    "選択したファイルを完全に削除しますか？" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permanently delete selected files?"
-          }
-        }
-      }
-    },
-    "閉じる" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
-          }
-        }
-      }
-    }
-  },
-  "version" : "1.0"
+    "version" : "1.0"
 }
