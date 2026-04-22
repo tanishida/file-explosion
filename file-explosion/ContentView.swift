@@ -109,6 +109,29 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isUnlocked {
+                    // ▼ 🆕 追加：選択モードの時だけ、左上に「全選択 / 全解除」ボタンを配置
+                    if isSelectionMode {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                // 今画面に表示されているファイルのリストを取得
+                                let currentFiles = currentFilteredFiles(for: selectedFolder)
+                                
+                                if selectedFileIDs.count == currentFiles.count && !currentFiles.isEmpty {
+                                    // すべて選択されていれば、全解除
+                                    selectedFileIDs.removeAll()
+                                } else {
+                                    // 1つでも未選択があれば、表示中のファイルを全選択
+                                    selectedFileIDs = Set(currentFiles.map { $0.id })
+                                }
+                            }) {
+                                let currentFiles = currentFilteredFiles(for: selectedFolder)
+                                Text(selectedFileIDs.count == currentFiles.count && !currentFiles.isEmpty ? "すべて選択解除" : "すべて選択")
+                                    .font(.body)
+                            }
+                        }
+                    }
+                    
+                    // ▼ 既存の右上のボタン（完了ボタン / メニュー）
                     ToolbarItem(placement: .navigationBarTrailing) {
                         if isSelectionMode {
                             Button(action: { withAnimation { isSelectionMode = false; selectedFileIDs.removeAll() } }) { Image(systemName: "xmark").font(.title3).fontWeight(.bold) }
@@ -246,6 +269,7 @@ struct ContentView: View {
                     ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
                         FolderChip(title: folder.name, icon: "folder.fill", customTint: .blue, isSelected: selectedAppFolderID == folder.id && !showingFavoritesOnly) { selectedAppFolderID = folder.id; showingFavoritesOnly = false }
                             .contextMenu {
+                                // ▼ 🆕 カスタムフォルダのコンテキストメニューに書き出しを追加！
                                 Button(action: {
                                     let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
                                     if !targets.isEmpty { selectedFileIDs = Set(targets.map { $0.id }); exportSelectedFiles() }
@@ -331,7 +355,20 @@ struct ContentView: View {
     func moveSelectedFiles(to folder: AppFolder?) { for fileID in selectedFileIDs { if let folder = folder { fileFolderMap[fileID] = folder.id } else { fileFolderMap.removeValue(forKey: fileID) } }; saveFolders(); isSelectionMode = false; selectedFileIDs.removeAll() }
     
     // MARK: - メインロジック群
-    func deleteSelectedFiles() { let targets = secretFiles.filter { selectedFileIDs.contains($0.id) }; for file in targets { fileFolderMap.removeValue(forKey: file.id); favoriteFileIDs.remove(file.id); try? FileManager.default.removeItem(at: file.url); try? FileManager.default.removeItem(at: FileManagerHelper.getCacheURL(for: file)) }; saveFolders(); withAnimation { isSelectionMode = false; selectedFileIDs.removeAll() }; refreshFiles() }
+    func deleteSelectedFiles() {
+        let targets = secretFiles.filter { selectedFileIDs.contains($0.id) }
+        for file in targets {
+            fileFolderMap.removeValue(forKey: file.id)
+            favoriteFileIDs.remove(file.id)
+            try? FileManager.default.removeItem(at: file.url)
+            try? FileManager.default.removeItem(at: FileManagerHelper.getCacheURL(for: file))
+        }
+        saveFolders()
+        withAnimation { isSelectionMode = false; selectedFileIDs.removeAll() }
+        refreshFiles()
+        
+        StorageCleaner.clearAllTempAndCacheData()
+    }
     func exportSelectedFiles() { isProcessing = true; processingMessage = "復号中..."; let targets = secretFiles.filter { selectedFileIDs.contains($0.id) }; DispatchQueue.global(qos: .userInitiated).async { var tempURLs: [URL] = []; for file in targets { let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Export_" + file.url.lastPathComponent); if KeyManager.decryptFile(inputURL: file.url, outputURL: tempURL) { tempURLs.append(tempURL) } }; DispatchQueue.main.async { isProcessing = false; if !tempURLs.isEmpty { self.filesToShare = tempURLs; self.showShareSheet = true } } } }
     func cleanupExportedFiles() { for url in filesToShare { try? FileManager.default.removeItem(at: url) }; filesToShare.removeAll(); withAnimation { isSelectionMode = false; selectedFileIDs.removeAll() } }
     func checkInitialSetup() { if appPasscode.isEmpty || lastAccessDate == 0 { isFirstSetupMode = true; showingPasscodeSetup = true } else { checkTimeLimit() } }

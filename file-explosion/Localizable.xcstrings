@@ -257,6 +257,26 @@
         }
       }
     },
+    "すべて選択" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select All"
+          }
+        }
+      }
+    },
+    "すべて選択解除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselect All"
+          }
+        }
+      }
+    },
     "セキュリティ管理" : {
       "localizations" : {
         "en" : {
