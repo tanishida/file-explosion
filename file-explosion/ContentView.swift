@@ -152,7 +152,9 @@ struct ContentView: View {
             .onChange(of: timerLimitSeconds) { _ in lastAccessDate = Date().timeIntervalSince1970 }
             .fullScreenCover(isPresented: $showingPasscodeSetup) { PasscodeSetupView(isUnlocked: $isUnlocked, isFirstSetup: isFirstSetupMode) }
             
-            .fullScreenCover(isPresented: $showingGallery) {
+            .fullScreenCover(isPresented: $showingGallery, onDismiss: {
+                StorageCleaner.clearAllTempAndCacheData()
+            }) {
                 GalleryView(
                     files: currentFilteredFiles(for: selectedFolder),
                     currentIndex: $galleryIndex,

@@ -78,7 +78,9 @@ struct GalleryView: View {
                         DetailView(file: file, isVisible: currentIndex == index, isLandscapeMode: isLandscapeMode, globalDragOffset: $dragOffset, showUI: $showUI)
                             .tag(index)
                     }
-                }.tabViewStyle(.page(indexDisplayMode: .never)).ignoresSafeArea()
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .ignoresSafeArea()
                 
                 VStack {
                     HStack {
@@ -113,13 +115,17 @@ struct GalleryView: View {
             Button("削除", role: .destructive) {
                 if files.indices.contains(currentIndex) {
                     onDelete(files[currentIndex])
-                    
-                    StorageCleaner.clearAllTempAndCacheData()
+                    // ▼ 修正残し②：次の画像が真っ暗になるバグを防ぐため、ここでは全消去を「呼ばない」
                 }
             }
         } message: { Text("このファイルを完全に削除しますか？") }
-        .sheet(isPresented: $showShareSheet, onDismiss: { cleanupExportedFiles() }) { ShareSheet(activityItems: filesToShare) }
-        .overlay { if isProcessing { ZStack { Color.black.opacity(0.4).ignoresSafeArea(); VStack(spacing: 20) { ProgressView().scaleEffect(1.5).tint(.white); Text("復号中...").font(.callout).fontWeight(.bold).foregroundColor(.white) }.padding(30).background(Color.black.opacity(0.8)).cornerRadius(15) } } }
+            .sheet(isPresented: $showShareSheet, onDismiss: { cleanupExportedFiles() }) { ShareSheet(activityItems: filesToShare) }
+            .overlay { if isProcessing { ZStack { Color.black.opacity(0.4).ignoresSafeArea(); VStack(spacing: 20) { ProgressView().scaleEffect(1.5).tint(.white); Text("復号中...").font(.callout).fontWeight(.bold).foregroundColor(.white) }.padding(30).background(Color.black.opacity(0.8)).cornerRadius(15) } } }
+            .onDisappear {
+                DispatchQueue.global(qos: .background).async {
+                    StorageCleaner.clearAllTempAndCacheData()
+                }
+            }
     }
     
     func exportCurrentFile() { guard files.indices.contains(currentIndex) else { return }; isProcessing = true; let file = files[currentIndex]; DispatchQueue.global(qos: .userInitiated).async { let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Export_" + file.url.lastPathComponent); if KeyManager.decryptFile(inputURL: file.url, outputURL: tempURL) { DispatchQueue.main.async { isProcessing = false; filesToShare = [tempURL]; showShareSheet = true } } else { DispatchQueue.main.async { isProcessing = false } } } }
@@ -127,7 +133,7 @@ struct GalleryView: View {
 }
 
 // --------------------------------------------------------
-// 詳細表示ビュー（3層レイヤー＆ジェスチャー完璧版）
+// 詳細表示ビュー（元の安定していたジェスチャー版）
 // --------------------------------------------------------
 struct DetailView: View {
     let file: SecretFile
@@ -170,6 +176,29 @@ struct DetailView: View {
             }
         }
     }
+    
+    // ▼ 追加：等倍の時だけ使う、縦スワイプ専用ジェスチャー（誤爆防止チューニング版）
+    var verticalDismissGesture: some Gesture {
+        // ① 判定開始の「遊び」を少し大きくする（15 → 30）
+        // これにより、指が触れた直後のブレを無視し、横スワイプ(TabView)に優先権を譲りやすくします
+        DragGesture(minimumDistance: 30)
+            .onChanged { value in
+                // ② 「下方向（height > 0）」かつ「縦の動きが横の2倍以上ある」時だけ反応させる
+                // これで、雑な横スワイプ（弧を描くスワイプ）での誤爆を完全に防ぎます
+                if value.translation.height > 0 && value.translation.height > abs(value.translation.width) * 2 {
+                    globalDragOffset = CGSize(width: 0, height: value.translation.height)
+                }
+            }
+            .onEnded { value in
+                // ③ 実際に下方向へ引っ張った量が120を超えていたら閉じる
+                if globalDragOffset.height > 120 {
+                    dismiss()
+                } else {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { globalDragOffset = .zero }
+                }
+            }
+    }
+    
     var zoomGesture: some Gesture { MagnificationGesture().onChanged { value in scale = lastScale * value }.onEnded { _ in lastScale = scale; if scale < 1.0 { withAnimation { resetZoom() } } } }
     
     var body: some View {
@@ -178,9 +207,6 @@ struct DetailView: View {
                 Color.clear.ignoresSafeArea()
                 
                 if let url = decryptedURL {
-                    // ==========================================
-                    // 1. メディアレイヤー（純粋に表示と回転・ズームだけを担当）
-                    // ==========================================
                     Group {
                         if file.isVideo {
                             if let p = player { VideoPlayer(player: p).disabled(true) }
@@ -194,29 +220,38 @@ struct DetailView: View {
                     .offset(scale > 1.0 ? offset : globalDragOffset)
                     
                     if file.isPDF {
-                        // PDFは標準ジェスチャーを活かすためレイヤー化から除外
                         PDFKitView(url: url)
                             .frame(width: isLandscapeMode ? geo.size.height : geo.size.width, height: isLandscapeMode ? geo.size.width : geo.size.height)
                             .rotationEffect(.degrees(isLandscapeMode ? 90 : 0))
                     }
                     
                     // ==========================================
-                    // 2. タッチ判定レイヤー（画面全体に広がり、向きに関係なく指の動きをキャッチ！）
+                    // 2. タッチ判定レイヤー
                     // ==========================================
                     if !file.isPDF {
-                        Color.clear.contentShape(Rectangle())
-                            .gesture(dragGesture)
-                            .simultaneousGesture(zoomGesture)
-                            .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
-                            .onTapGesture {
-                                withAnimation(.easeInOut) { showUI.toggle() }
-                                if showUI && isPlaying { triggerAutoHide() }
-                            }
+                        if scale > 1.0 {
+                            // ▼ ズーム中：ドラッグ（画像移動）を有効にする
+                            Color.clear.contentShape(Rectangle())
+                                .gesture(dragGesture)
+                                .simultaneousGesture(zoomGesture)
+                                .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
+                                .onTapGesture {
+                                    withAnimation(.easeInOut) { showUI.toggle() }
+                                    if showUI && isPlaying { triggerAutoHide() }
+                                }
+                        } else {
+                            // ▼ 等倍時：ドラッグ判定を【完全に消去】し、TabViewに横スワイプを100%譲る！
+                            Color.clear.contentShape(Rectangle())
+                                .simultaneousGesture(verticalDismissGesture)
+                                .simultaneousGesture(zoomGesture)
+                                .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
+                                .onTapGesture {
+                                    withAnimation(.easeInOut) { showUI.toggle() }
+                                    if showUI && isPlaying { triggerAutoHide() }
+                                }
+                        }
                     }
                     
-                    // ==========================================
-                    // 3. UIコントロールレイヤー（ビデオ再生中のみ表示）
-                    // ==========================================
                     if showUI && globalDragOffset == .zero {
                         if file.isVideo, let p = player {
                             VStack {
@@ -244,7 +279,7 @@ struct DetailView: View {
                                 .padding(.horizontal, 15).padding(.vertical, 8)
                                 .background(Color.black.opacity(0.5)).cornerRadius(30)
                                 .padding(.bottom, 90)
-                                .padding(.horizontal, isLandscapeMode ? 80 : 10) // 横向き時は端を詰める
+                                .padding(.horizontal, isLandscapeMode ? 80 : 10)
                                 .transition(.opacity)
                             }
                             .frame(width: isLandscapeMode ? geo.size.height : geo.size.width, height: isLandscapeMode ? geo.size.width : geo.size.height)
@@ -264,7 +299,6 @@ struct DetailView: View {
         let viewWidth = isLandscapeMode ? physicalSize.height : physicalSize.width
         let viewHeight = isLandscapeMode ? physicalSize.width : physicalSize.height
         
-        // 横向き（90度回転）の時は、指が触れた位置を「元画像の中のどこか」に逆算してあげる
         let localX = isLandscapeMode ? physicalLocation.y : physicalLocation.x
         let localY = isLandscapeMode ? (physicalSize.width - physicalLocation.x) : physicalLocation.y
         

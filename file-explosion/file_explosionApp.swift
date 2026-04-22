@@ -58,4 +58,17 @@ class StorageCleaner {
             }
         }
     }
+    static func clearCachesExcept(currentCacheURL: URL) {
+        let fileManager = FileManager.default
+        if let cacheUrl = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
+            if let cacheFiles = try? fileManager.contentsOfDirectory(at: cacheUrl, includingPropertiesForKeys: nil) {
+                for file in cacheFiles {
+                    // 今画面に表示しているキャッシュファイル「以外」だったら削除
+                    if file.lastPathComponent != currentCacheURL.lastPathComponent {
+                        try? fileManager.removeItem(at: file)
+                    }
+                }
+            }
+        }
+    }
 }
