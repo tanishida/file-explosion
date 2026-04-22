@@ -108,7 +108,16 @@ struct GalleryView: View {
             }
         }
         .confirmationDialog("移動先を選択", isPresented: $showingMoveDialog, titleVisibility: .visible) { Button("未分類に戻す") { if files.indices.contains(currentIndex) { onMove(files[currentIndex], nil) } }; ForEach(appFolders.filter { $0.category == currentCategory }) { folder in Button(folder.name) { if files.indices.contains(currentIndex) { onMove(files[currentIndex], folder) } } }; Button("キャンセル", role: .cancel) {} }
-        .alert("削除の確認", isPresented: $showingDeleteConfirm) { Button("キャンセル", role: .cancel) { }; Button("削除", role: .destructive) { if files.indices.contains(currentIndex) { onDelete(files[currentIndex]) } } } message: { Text("このファイルを完全に削除しますか？") }
+        .alert("削除の確認", isPresented: $showingDeleteConfirm) {
+            Button("キャンセル", role: .cancel) { }
+            Button("削除", role: .destructive) {
+                if files.indices.contains(currentIndex) {
+                    onDelete(files[currentIndex])
+                    
+                    StorageCleaner.clearAllTempAndCacheData()
+                }
+            }
+        } message: { Text("このファイルを完全に削除しますか？") }
         .sheet(isPresented: $showShareSheet, onDismiss: { cleanupExportedFiles() }) { ShareSheet(activityItems: filesToShare) }
         .overlay { if isProcessing { ZStack { Color.black.opacity(0.4).ignoresSafeArea(); VStack(spacing: 20) { ProgressView().scaleEffect(1.5).tint(.white); Text("復号中...").font(.callout).fontWeight(.bold).foregroundColor(.white) }.padding(30).background(Color.black.opacity(0.8)).cornerRadius(15) } } }
     }

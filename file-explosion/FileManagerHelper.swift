@@ -2,6 +2,27 @@ import Foundation
 
 class FileManagerHelper {
     
+    class StorageCleaner {
+        static func clearAllTempAndCacheData() {
+            let fileManager = FileManager.default
+            
+            let tempUrl = fileManager.temporaryDirectory
+            if let tempFiles = try? fileManager.contentsOfDirectory(at: tempUrl, includingPropertiesForKeys: nil) {
+                for file in tempFiles {
+                    try? fileManager.removeItem(at: file)
+                }
+            }
+            
+            if let cacheUrl = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
+                if let cacheFiles = try? fileManager.contentsOfDirectory(at: cacheUrl, includingPropertiesForKeys: nil) {
+                    for file in cacheFiles {
+                        try? fileManager.removeItem(at: file)
+                    }
+                }
+            }
+        }
+    }
+    
     // 📁 秘密の暗号化ファイルを保存する「絶対に消えない」専用ディレクトリ
     static var secretDirectory: URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
