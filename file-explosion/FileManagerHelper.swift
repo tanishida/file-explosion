@@ -42,10 +42,11 @@ class FileManagerHelper {
         }
         return dir
     }
-    // 🗑️ 解読したファイル（キャッシュ）を「一時的」に置くディレクトリ
+    // 🗑️ 解読したファイル（キャッシュ）を置くディレクトリ（Cachesフォルダ配下）
     static var cacheDirectory: URL {
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("DecryptedCache")
-        
+        let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+        ?? FileManager.default.temporaryDirectory
+        let dir = base.appendingPathComponent("DecryptedCache")
         if !FileManager.default.fileExists(atPath: dir.path) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
@@ -91,6 +92,32 @@ class FileManagerHelper {
             }
         } catch {
             print("キャッシュの削除に失敗: \(error)")
+        }
+    }
+    
+    // 🧹 tmpフォルダだけを掃除する（復号キャッシュは残す）
+    static func clearTempDirectory() {
+        let fileManager = FileManager.default
+        let tempURL = fileManager.temporaryDirectory
+        if let files = try? fileManager.contentsOfDirectory(at: tempURL, includingPropertiesForKeys: nil) {
+            for file in files { try? fileManager.removeItem(at: file) }
+        }
+    }
+    
+    // 🕐 指定秒数以上前に作られた復号キャッシュだけを削除する
+    static func clearExpiredDecryptedCache(olderThan seconds: TimeInterval = 600) {
+        let fileManager = FileManager.default
+        guard let files = try? fileManager.contentsOfDirectory(
+            at: cacheDirectory,
+            includingPropertiesForKeys: [.creationDateKey]
+        ) else { return }
+        let cutoff = Date().addingTimeInterval(-seconds)
+        for file in files {
+            if let attrs = try? file.resourceValues(forKeys: [.creationDateKey]),
+               let created = attrs.creationDate,
+               created < cutoff {
+                try? fileManager.removeItem(at: file)
+            }
         }
     }
     

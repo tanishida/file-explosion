@@ -123,7 +123,7 @@ struct GalleryView: View {
             .overlay { if isProcessing { ZStack { Color.black.opacity(0.4).ignoresSafeArea(); VStack(spacing: 20) { ProgressView().scaleEffect(1.5).tint(.white); Text("復号中...").font(.callout).fontWeight(.bold).foregroundColor(.white) }.padding(30).background(Color.black.opacity(0.8)).cornerRadius(15) } } }
             .onDisappear {
                 DispatchQueue.global(qos: .background).async {
-                    StorageCleaner.clearAllTempAndCacheData()
+                    FileManagerHelper.clearTempDirectory()
                 }
             }
     }
@@ -145,6 +145,7 @@ struct DetailView: View {
     @State private var decryptedURL: URL? = nil
     @State private var isDecrypting = true
     @State private var player: AVPlayer? = nil
+    @State private var isSetupComplete = false
     
     @State private var isPlaying = false
     @State private var isMuted = false
@@ -162,9 +163,17 @@ struct DetailView: View {
     @Environment(\.dismiss) var dismiss
     
     var dragGesture: some Gesture {
-        DragGesture(minimumDistance: scale > 1.0 ? 0 : 20).onChanged { value in
+        DragGesture(minimumDistance: scale > 1.0 ? 10 : 20).onChanged { value in
             if scale > 1.0 {
-                offset = CGSize(width: lastOffset.width + value.translation.width, height: lastOffset.height + value.translation.height)
+                let newX = lastOffset.width + value.translation.width
+                let newY = lastOffset.height + value.translation.height
+                // ズーム時は画像端でオフセットをクランプ（はみ出し量の半分が最大移動量）
+                let maxX = UIScreen.main.bounds.width * (scale - 1) / 2
+                let maxY = UIScreen.main.bounds.height * (scale - 1) / 2
+                offset = CGSize(
+                    width: min(maxX, max(-maxX, newX)),
+                    height: min(maxY, max(-maxY, newY))
+                )
             } else {
                 if abs(value.translation.height) > abs(value.translation.width) { globalDragOffset = value.translation }
             }
@@ -230,15 +239,15 @@ struct DetailView: View {
                     // ==========================================
                     if !file.isPDF {
                         if scale > 1.0 {
-                            // ▼ ズーム中：ドラッグ（画像移動）を有効にする
+                            // ▼ ズーム中：タップを先に宣言し、ドラッグは排他ジェスチャー（TabViewの横スワイプをブロック）
                             Color.clear.contentShape(Rectangle())
-                                .gesture(dragGesture)
-                                .simultaneousGesture(zoomGesture)
                                 .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
                                 .onTapGesture {
                                     withAnimation(.easeInOut) { showUI.toggle() }
                                     if showUI && isPlaying { triggerAutoHide() }
                                 }
+                                .gesture(dragGesture)
+                                .simultaneousGesture(zoomGesture)
                         } else {
                             // ▼ 等倍時：ドラッグ判定を【完全に消去】し、TabViewに横スワイプを100%譲る！
                             Color.clear.contentShape(Rectangle())
@@ -293,6 +302,18 @@ struct DetailView: View {
             let cache = FileManagerHelper.getCacheURL(for: file); if FileManager.default.fileExists(atPath: cache.path) { setupContent(url: cache) }
             else { DispatchQueue.global(qos: .userInitiated).async { if KeyManager.decryptFile(inputURL: file.url, outputURL: cache) { DispatchQueue.main.async { setupContent(url: cache) } } else { DispatchQueue.main.async { isDecrypting = false } } } }
         }
+        .onChange(of: isVisible) { _, visible in
+            guard let p = player else { return }
+            if visible {
+                p.play(); isPlaying = true; triggerAutoHide()
+            } else {
+                p.pause(); isPlaying = false; hideTask?.cancel()
+            }
+        }
+        .onChange(of: isSetupComplete) { _, done in
+            guard done, isVisible, let p = player else { return }
+            p.play(); isPlaying = true; triggerAutoHide()
+        }
     }
     
     private func handleDoubleTap(at physicalLocation: CGPoint, in physicalSize: CGSize) {
@@ -324,8 +345,12 @@ struct DetailView: View {
         if file.isVideo {
             let newPlayer = AVPlayer(url: url); player = newPlayer;
             newPlayer.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.5, preferredTimescale: 600), queue: .main) { time in if !isDraggingSlider { currentTime = time.seconds } }
-            if let durationTime = newPlayer.currentItem?.asset.duration { duration = durationTime.seconds }
-            if isVisible { newPlayer.play(); isPlaying = true; triggerAutoHide() }
+            Task {
+                let asset = newPlayer.currentItem?.asset
+                if let dur = try? await asset?.load(.duration) { await MainActor.run { duration = dur.seconds } }
+            }
+            // isVisible の現在値は onChange に任せ、ここでは isSetupComplete を立てるだけ
+            isSetupComplete = true
         }
     }
     private func formatTime(_ seconds: Double) -> String { let m = Int(seconds) / 60; let s = Int(seconds) % 60; return String(format: "%d:%02d", m, s) }

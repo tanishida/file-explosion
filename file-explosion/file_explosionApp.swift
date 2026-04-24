@@ -17,14 +17,14 @@ struct file_explosionApp: App {
             Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -38,35 +38,26 @@ struct file_explosionApp: App {
 }
 
 class StorageCleaner {
+    /// バックグラウンド移行時：tmpだけ全削除、復号キャッシュは10分以上前のものだけ削除
     static func clearAllTempAndCacheData() {
-        let fileManager = FileManager.default
-        
-        // 1. tmpフォルダのお掃除
-        let tempUrl = fileManager.temporaryDirectory
-        if let tempFiles = try? fileManager.contentsOfDirectory(at: tempUrl, includingPropertiesForKeys: nil) {
-            for file in tempFiles {
-                try? fileManager.removeItem(at: file)
-            }
-        }
-        
-        // 2. Cachesフォルダのお掃除
-        if let cacheUrl = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
-            if let cacheFiles = try? fileManager.contentsOfDirectory(at: cacheUrl, includingPropertiesForKeys: nil) {
-                for file in cacheFiles {
-                    try? fileManager.removeItem(at: file)
-                }
-            }
-        }
+        FileManagerHelper.clearTempDirectory()
+        FileManagerHelper.clearExpiredDecryptedCache(olderThan: 600)
     }
+    
+    /// 復号キャッシュを全消去（アプリ終了時など）
+    static func clearDecryptedCache() {
+        FileManagerHelper.clearTempCache()
+    }
+    
     static func clearCachesExcept(currentCacheURL: URL) {
         let fileManager = FileManager.default
-        if let cacheUrl = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
-            if let cacheFiles = try? fileManager.contentsOfDirectory(at: cacheUrl, includingPropertiesForKeys: nil) {
-                for file in cacheFiles {
-                    // 今画面に表示しているキャッシュファイル「以外」だったら削除
-                    if file.lastPathComponent != currentCacheURL.lastPathComponent {
-                        try? fileManager.removeItem(at: file)
-                    }
+        if let files = try? fileManager.contentsOfDirectory(
+            at: FileManagerHelper.cacheDirectory,
+            includingPropertiesForKeys: nil
+        ) {
+            for file in files {
+                if file.lastPathComponent != currentCacheURL.lastPathComponent {
+                    try? fileManager.removeItem(at: file)
                 }
             }
         }
