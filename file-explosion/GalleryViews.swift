@@ -34,14 +34,87 @@ struct FileThumbnailView: View {
     }
     
     private func loadThumbnail() async {
-        let cacheKey = file.url.lastPathComponent as NSString; let image = await Task.detached(priority: .userInitiated) { () -> UIImage? in if Task.isCancelled { return nil }; let thumbURL = FileManagerHelper.getThumbnailURL(for: file)
-            if FileManager.default.fileExists(atPath: thumbURL.path) { let tempThumbURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".thumb.tmp"); if KeyManager.decryptFile(inputURL: thumbURL, outputURL: tempThumbURL) { defer { try? FileManager.default.removeItem(at: tempThumbURL) }; if let data = try? Data(contentsOf: tempThumbURL), let img = UIImage(data: data) { return (await img.byPreparingForDisplay()) ?? img } } }
-            if Task.isCancelled { return nil }; let cacheURL = FileManagerHelper.getCacheURL(for: file); let isCached = FileManager.default.fileExists(atPath: cacheURL.path); let targetURL = isCached ? cacheURL : FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".tmp")
-            if !isCached { guard KeyManager.decryptFile(inputURL: file.url, outputURL: targetURL) else { return nil } }; defer { if !isCached { try? FileManager.default.removeItem(at: targetURL) } }
-            if Task.isCancelled { return nil }; if let img = createThumbnailImage(from: targetURL) { if let jpegData = img.jpegData(compressionQuality: 0.4) { let unencryptedThumbURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".jpg"); try? jpegData.write(to: unencryptedThumbURL); _ = KeyManager.encryptFile(inputURL: unencryptedThumbURL, outputURL: thumbURL); try? FileManager.default.removeItem(at: unencryptedThumbURL) }; return (await img.byPreparingForDisplay()) ?? img }; return nil
-        }.value; if !Task.isCancelled, let finalImage = image { Self.memCache.setObject(finalImage, forKey: cacheKey); await MainActor.run { self.thumbnailImage = finalImage } }
+        let cacheKey = file.url.lastPathComponent as NSString
+        if let cached = Self.memCache.object(forKey: cacheKey) {
+            self.thumbnailImage = cached
+            return
+        }
+        
+        let image = await Task.detached(priority: .userInitiated) { () -> UIImage? in
+            if Task.isCancelled { return nil }
+            
+            let thumbURL = FileManagerHelper.getThumbnailURL(for: file)
+            if FileManager.default.fileExists(atPath: thumbURL.path) {
+                let tempThumbURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".thumb.tmp")
+                if KeyManager.decryptFile(inputURL: thumbURL, outputURL: tempThumbURL) {
+                    defer { try? FileManager.default.removeItem(at: tempThumbURL) }
+                    if let data = try? Data(contentsOf: tempThumbURL), let img = UIImage(data: data) {
+                        return await img.byPreparingForDisplay() ?? img
+                    }
+                }
+                
+            }
+            
+            if Task.isCancelled { return nil }
+            
+            let cacheURL = FileManagerHelper.getCacheURL(for: file)
+            let isCached = FileManager.default.fileExists(atPath: cacheURL.path)
+            let targetURL = isCached ? cacheURL : FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".tmp")
+            
+            if !isCached {
+                guard KeyManager.decryptFile(inputURL: file.url, outputURL: targetURL) else { return nil }
+            }
+            defer {
+                if !isCached { try? FileManager.default.removeItem(at: targetURL) }
+            }
+            
+            if Task.isCancelled { return nil }
+            
+            if let img = await createThumbnailImage(from: targetURL) {
+                if let jpegData = img.jpegData(compressionQuality: 0.4) {
+                    let unencryptedThumbURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".jpg")
+                    try? jpegData.write(to: unencryptedThumbURL)
+                    _ = KeyManager.encryptFile(inputURL: unencryptedThumbURL, outputURL: thumbURL)
+                    try? FileManager.default.removeItem(at: unencryptedThumbURL)
+                }
+                return await img.byPreparingForDisplay() ?? img
+            }
+            return nil
+        }.value
+        
+        if !Task.isCancelled, let finalImage = image {
+            Self.memCache.setObject(finalImage, forKey: cacheKey)
+            await MainActor.run {
+                self.thumbnailImage = finalImage
+            }
+        }
     }
-    private func createThumbnailImage(from url: URL) -> UIImage? { if file.isImage { let options = [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceThumbnailMaxPixelSize: 150, kCGImageSourceCreateThumbnailWithTransform: true] as CFDictionary; if let source = CGImageSourceCreateWithURL(url as CFURL, nil), let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) { return UIImage(cgImage: cgImage) } } else if file.isVideo { let generator = AVAssetImageGenerator(asset: AVAsset(url: url)); generator.appliesPreferredTrackTransform = true; generator.maximumSize = CGSize(width: 150, height: 150); if let cgImage = try? generator.copyCGImage(at: .zero, actualTime: nil) { return UIImage(cgImage: cgImage) } } else if file.isPDF { if let document = PDFDocument(url: url), let page = document.page(at: 0) { return page.thumbnail(of: CGSize(width: 150, height: 150), for: .mediaBox) } } ; return nil }
+    
+    private func createThumbnailImage(from url: URL) async -> UIImage? {
+        if file.isImage {
+            let options = [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceThumbnailMaxPixelSize: 150,
+                kCGImageSourceCreateThumbnailWithTransform: true
+            ] as CFDictionary
+            if let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+               let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) {
+                return UIImage(cgImage: cgImage)
+            }
+        } else if file.isVideo {
+            let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+            generator.appliesPreferredTrackTransform = true
+            generator.maximumSize = CGSize(width: 150, height: 150)
+            if let cgImage = try? await generator.image(at: .zero).image {
+                return UIImage(cgImage: cgImage)
+            }
+        } else if file.isPDF {
+            if let document = PDFDocument(url: url), let page = document.page(at: 0) {
+                return page.thumbnail(of: CGSize(width: 150, height: 150), for: .mediaBox)
+            }
+        }
+        return nil
+    }
 }
 
 // --------------------------------------------------------
@@ -72,6 +145,7 @@ struct GalleryView: View {
             TransparentBackground()
             Color.black.opacity(dragOffset == .zero ? 1.0 : max(0, 1.0 - Double(abs(dragOffset.height) / 300))).ignoresSafeArea()
             
+            
             if files.isEmpty { Color.clear.ignoresSafeArea() } else {
                 TabView(selection: $currentIndex) {
                     ForEach(Array(files.enumerated()), id: \.element.id) { index, file in
@@ -90,69 +164,73 @@ struct GalleryView: View {
                         Button(action: { dismiss() }) { Image(systemName: "xmark.circle.fill").font(.system(size: 30)).foregroundColor(.white.opacity(0.8)) }
                     }.padding(.horizontal).padding(.top, 10)
                     Spacer()
-                    if files.indices.contains(currentIndex) {
-                        HStack {
-                            Button(action: { exportCurrentFile() }) { Image(systemName: "square.and.arrow.up").font(.title2).foregroundColor(.white) }
-                            Spacer()
-                            Button(action: { onToggleFavorite(files[currentIndex]) }) { Image(systemName: isFavorite(files[currentIndex]) ? "heart.fill" : "heart").font(.title2).foregroundColor(isFavorite(files[currentIndex]) ? .pink : .white) }
-                            Spacer()
-                            Button(action: { showingMoveDialog = true }) { Image(systemName: "folder").font(.title2).foregroundColor(.white) }
-                            Spacer()
-                            Button(action: { showingDeleteConfirm = true }) { Image(systemName: "trash").font(.title2).foregroundColor(.white) }
-                        }
-                        .padding(.horizontal, 40).padding(.vertical, 15)
-                        .background(LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top))
-                    }
+                    if showUI { galleryBottomBar.transition(.move(edge: .bottom)) }
                 }
-                .opacity(showUI && dragOffset == .zero ? 1.0 : 0.0)
-                .animation(.easeInOut(duration: 0.2), value: showUI)
-                .animation(.easeInOut(duration: 0.2), value: dragOffset == .zero)
+                .opacity(showUI ? 1 : 0)
+                .animation(.easeInOut, value: showUI)
             }
         }
-        .confirmationDialog("移動先を選択", isPresented: $showingMoveDialog, titleVisibility: .visible) { Button("未分類に戻す") { if files.indices.contains(currentIndex) { onMove(files[currentIndex], nil) } }; ForEach(appFolders.filter { $0.category == currentCategory }) { folder in Button(folder.name) { if files.indices.contains(currentIndex) { onMove(files[currentIndex], folder) } } }; Button("キャンセル", role: .cancel) {} }
+        .gesture(dragOffset.height > 0 ? DragGesture(minimumDistance: 30).onChanged { value in if value.translation.height > 0 { self.dragOffset = value.translation } }.onEnded { value in if value.translation.height > 120 { dismiss() } else { withAnimation(.spring()) { self.dragOffset = .zero } } } : nil)
+        .sheet(isPresented: $showShareSheet, onDismiss: { filesToShare.forEach { try? FileManager.default.removeItem(at: $0) }; filesToShare.removeAll() }) { ShareSheet(activityItems: filesToShare) }
+        .confirmationDialog("移動先を選択", isPresented: $showingMoveDialog, titleVisibility: .visible) {
+            Button("未分類に戻す") { onMove(files[currentIndex], nil) }
+            ForEach(appFolders.filter { $0.category == currentCategory }) { folder in Button(folder.name) { onMove(files[currentIndex], folder) } }
+            Button("キャンセル", role: .cancel) {}
+        }
         .alert("削除の確認", isPresented: $showingDeleteConfirm) {
-            Button("キャンセル", role: .cancel) { }
-            Button("削除", role: .destructive) {
-                if files.indices.contains(currentIndex) {
-                    onDelete(files[currentIndex])
-                    // ▼ 修正残し②：次の画像が真っ暗になるバグを防ぐため、ここでは全消去を「呼ばない」
-                }
-            }
+            Button("キャンセル", role: .cancel) {}
+            Button("削除", role: .destructive) { onDelete(files[currentIndex]) }
         } message: { Text("このファイルを完全に削除しますか？") }
-            .sheet(isPresented: $showShareSheet, onDismiss: { cleanupExportedFiles() }) { ShareSheet(activityItems: filesToShare) }
-            .overlay { if isProcessing { ZStack { Color.black.opacity(0.4).ignoresSafeArea(); VStack(spacing: 20) { ProgressView().scaleEffect(1.5).tint(.white); Text("復号中...").font(.callout).fontWeight(.bold).foregroundColor(.white) }.padding(30).background(Color.black.opacity(0.8)).cornerRadius(15) } } }
-            .onDisappear {
-                DispatchQueue.global(qos: .background).async {
-                    FileManagerHelper.clearTempDirectory()
-                }
-            }
+            .overlay { if isProcessing { ZStack { Color.black.opacity(0.5).ignoresSafeArea(); ProgressView().tint(.white).scaleEffect(1.5) } } }
     }
     
-    func exportCurrentFile() { guard files.indices.contains(currentIndex) else { return }; isProcessing = true; let file = files[currentIndex]; DispatchQueue.global(qos: .userInitiated).async { let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Export_" + file.url.lastPathComponent); if KeyManager.decryptFile(inputURL: file.url, outputURL: tempURL) { DispatchQueue.main.async { isProcessing = false; filesToShare = [tempURL]; showShareSheet = true } } else { DispatchQueue.main.async { isProcessing = false } } } }
-    func cleanupExportedFiles() { for url in filesToShare { try? FileManager.default.removeItem(at: url) }; filesToShare.removeAll() }
+    var galleryBottomBar: some View {
+        HStack(spacing: 20) {
+            Button(action: { onToggleFavorite(files[currentIndex]) }) { Image(systemName: isFavorite(files[currentIndex]) ? "heart.fill" : "heart").font(.title2).foregroundColor(isFavorite(files[currentIndex]) ? .pink : .white) }
+            Button(action: { showingMoveDialog = true }) { Image(systemName: "folder").font(.title2).foregroundColor(.white) }
+            Button(action: { exportFile(files[currentIndex]) }) { Image(systemName: "square.and.arrow.up").font(.title2).foregroundColor(.white) }
+            Button(action: { showingDeleteConfirm = true }) { Image(systemName: "trash").font(.title2).foregroundColor(.white) }
+        }
+        .padding(.horizontal, 30).padding(.vertical, 15).background(Color.black.opacity(0.6)).cornerRadius(30).padding(.bottom, 30)
+    }
+    
+    func exportFile(_ file: SecretFile) {
+        isProcessing = true
+        DispatchQueue.global(qos: .userInitiated).async {
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Export_" + file.url.lastPathComponent)
+            if KeyManager.decryptFile(inputURL: file.url, outputURL: tempURL) {
+                DispatchQueue.main.async {
+                    self.filesToShare = [tempURL]
+                    self.showShareSheet = true
+                    self.isProcessing = false
+                }
+            } else {
+                DispatchQueue.main.async { self.isProcessing = false }
+            }
+        }
+    }
 }
 
 // --------------------------------------------------------
-// 詳細表示ビュー（元の安定していたジェスチャー版）
+// 詳細ビュー（画像・動画・PDF）
 // --------------------------------------------------------
 struct DetailView: View {
     let file: SecretFile
-    var isVisible: Bool
-    var isLandscapeMode: Bool
+    let isVisible: Bool
+    let isLandscapeMode: Bool
     @Binding var globalDragOffset: CGSize
     @Binding var showUI: Bool
     
-    @State private var decryptedURL: URL? = nil
-    @State private var isDecrypting = true
-    @State private var player: AVPlayer? = nil
-    @State private var isSetupComplete = false
-    
+    @Environment(\.dismiss) var dismiss
+    @State private var decryptedURL: URL?
+    @State private var isDecrypting = false
+    @State private var player: AVPlayer?
     @State private var isPlaying = false
-    @State private var isMuted = false
     @State private var currentTime: Double = 0
     @State private var duration: Double = 0
     @State private var isDraggingSlider = false
-    @State private var hideTask: Task<Void, Never>? = nil
+    @State private var isMuted = false
+    @State private var hideTask: Task<Void, Never>?
     
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
@@ -160,14 +238,14 @@ struct DetailView: View {
     @State private var lastOffset: CGSize = .zero
     @State private var zoomAnchor: UnitPoint = .center
     
-    @Environment(\.dismiss) var dismiss
+    // ▼ 🟢 追加：Mac/iPadかどうかの判定フラグ
+    @State private var isMacOrPad = false
     
     var dragGesture: some Gesture {
         DragGesture(minimumDistance: scale > 1.0 ? 10 : 20).onChanged { value in
             if scale > 1.0 {
                 let newX = lastOffset.width + value.translation.width
                 let newY = lastOffset.height + value.translation.height
-                // ズーム時は画像端でオフセットをクランプ（はみ出し量の半分が最大移動量）
                 let maxX = UIScreen.main.bounds.width * (scale - 1) / 2
                 let maxY = UIScreen.main.bounds.height * (scale - 1) / 2
                 offset = CGSize(
@@ -186,25 +264,16 @@ struct DetailView: View {
         }
     }
     
-    // ▼ 追加：等倍の時だけ使う、縦スワイプ専用ジェスチャー（誤爆防止チューニング版）
     var verticalDismissGesture: some Gesture {
-        // ① 判定開始の「遊び」を少し大きくする（15 → 30）
-        // これにより、指が触れた直後のブレを無視し、横スワイプ(TabView)に優先権を譲りやすくします
         DragGesture(minimumDistance: 30)
             .onChanged { value in
-                // ② 「下方向（height > 0）」かつ「縦の動きが横の2倍以上ある」時だけ反応させる
-                // これで、雑な横スワイプ（弧を描くスワイプ）での誤爆を完全に防ぎます
                 if value.translation.height > 0 && value.translation.height > abs(value.translation.width) * 2 {
                     globalDragOffset = CGSize(width: 0, height: value.translation.height)
                 }
             }
             .onEnded { value in
-                // ③ 実際に下方向へ引っ張った量が120を超えていたら閉じる
-                if globalDragOffset.height > 120 {
-                    dismiss()
-                } else {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { globalDragOffset = .zero }
-                }
+                if globalDragOffset.height > 120 { dismiss() }
+                else { withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { globalDragOffset = .zero } }
             }
     }
     
@@ -218,7 +287,7 @@ struct DetailView: View {
                 if let url = decryptedURL {
                     Group {
                         if file.isVideo {
-                            if let p = player { VideoPlayer(player: p).disabled(true) }
+                            if let p = player { VideoPlayer(player: p).disabled(isMacOrPad) }
                         } else if file.isImage {
                             if let d = try? Data(contentsOf: url), let i = UIImage(data: d) { Image(uiImage: i).resizable().scaledToFit() }
                         }
@@ -234,12 +303,8 @@ struct DetailView: View {
                             .rotationEffect(.degrees(isLandscapeMode ? 90 : 0))
                     }
                     
-                    // ==========================================
-                    // 2. タッチ判定レイヤー
-                    // ==========================================
                     if !file.isPDF {
                         if scale > 1.0 {
-                            // ▼ ズーム中：タップを先に宣言し、ドラッグは排他ジェスチャー（TabViewの横スワイプをブロック）
                             Color.clear.contentShape(Rectangle())
                                 .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
                                 .onTapGesture {
@@ -249,19 +314,26 @@ struct DetailView: View {
                                 .gesture(dragGesture)
                                 .simultaneousGesture(zoomGesture)
                         } else {
-                            // ▼ 等倍時：ドラッグ判定を【完全に消去】し、TabViewに横スワイプを100%譲る！
-                            Color.clear.contentShape(Rectangle())
-                                .simultaneousGesture(verticalDismissGesture)
-                                .simultaneousGesture(zoomGesture)
-                                .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
-                                .onTapGesture {
-                                    withAnimation(.easeInOut) { showUI.toggle() }
-                                    if showUI && isPlaying { triggerAutoHide() }
-                                }
+                            if isMacOrPad && file.isVideo {
+                                Color.clear.contentShape(Rectangle())
+                                    .simultaneousGesture(verticalDismissGesture)
+                                    .simultaneousGesture(zoomGesture)
+                                    .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
+                                    .allowsHitTesting(false)
+                            } else {
+                                Color.clear.contentShape(Rectangle())
+                                    .simultaneousGesture(verticalDismissGesture)
+                                    .simultaneousGesture(zoomGesture)
+                                    .onTapGesture(count: 2) { location in handleDoubleTap(at: location, in: geo.size) }
+                                    .onTapGesture {
+                                        withAnimation(.easeInOut) { showUI.toggle() }
+                                        if showUI && isPlaying { triggerAutoHide() }
+                                    }
+                            }
                         }
                     }
                     
-                    if showUI && globalDragOffset == .zero {
+                    if showUI && globalDragOffset == .zero && !isMacOrPad {
                         if file.isVideo, let p = player {
                             VStack {
                                 Spacer()
@@ -299,20 +371,50 @@ struct DetailView: View {
             }
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
         }.onAppear {
-            let cache = FileManagerHelper.getCacheURL(for: file); if FileManager.default.fileExists(atPath: cache.path) { setupContent(url: cache) }
-            else { DispatchQueue.global(qos: .userInitiated).async { if KeyManager.decryptFile(inputURL: file.url, outputURL: cache) { DispatchQueue.main.async { setupContent(url: cache) } } else { DispatchQueue.main.async { isDecrypting = false } } } }
-        }
-        .onChange(of: isVisible) { _, visible in
-            guard let p = player else { return }
-            if visible {
-                p.play(); isPlaying = true; triggerAutoHide()
+            if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+                self.isMacOrPad = true
             } else {
-                p.pause(); isPlaying = false; hideTask?.cancel()
+                self.isMacOrPad = false
+            }
+            
+            if isVisible {
+                setupOrDecrypt()
             }
         }
-        .onChange(of: isSetupComplete) { _, done in
-            guard done, isVisible, let p = player else { return }
-            p.play(); isPlaying = true; triggerAutoHide()
+        .onChange(of: isVisible) { _, newValue in
+            if newValue {
+                if decryptedURL == nil {
+                    setupOrDecrypt()
+                } else {
+                    player?.play()
+                    isPlaying = true
+                    triggerAutoHide()
+                }
+            } else {
+                player?.pause()
+                isPlaying = false
+                hideTask?.cancel()
+            }
+        }
+    }
+    
+    private func setupOrDecrypt() {
+        let cacheURL = FileManagerHelper.getCacheURL(for: file)
+        if FileManager.default.fileExists(atPath: cacheURL.path) {
+            setupContent(url: cacheURL)
+        } else {
+            isDecrypting = true
+            DispatchQueue.global(qos: .userInitiated).async {
+                if KeyManager.decryptFile(inputURL: file.url, outputURL: cacheURL) {
+                    DispatchQueue.main.async {
+                        setupContent(url: cacheURL)
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        isDecrypting = false
+                    }
+                }
+            }
         }
     }
     
@@ -341,21 +443,67 @@ struct DetailView: View {
     }
     
     private func setupContent(url: URL) {
-        decryptedURL = url; isDecrypting = false;
+        decryptedURL = url
+        isDecrypting = false
+        
         if file.isVideo {
-            let newPlayer = AVPlayer(url: url); player = newPlayer;
-            newPlayer.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.5, preferredTimescale: 600), queue: .main) { time in if !isDraggingSlider { currentTime = time.seconds } }
-            Task {
-                let asset = newPlayer.currentItem?.asset
-                if let dur = try? await asset?.load(.duration) { await MainActor.run { duration = dur.seconds } }
+            let newPlayer = AVPlayer(url: url)
+            player = newPlayer
+            
+            newPlayer.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.5, preferredTimescale: 600), queue: .main) { time in
+                if !isDraggingSlider {
+                    currentTime = time.seconds
+                }
             }
-            // isVisible の現在値は onChange に任せ、ここでは isSetupComplete を立てるだけ
-            isSetupComplete = true
+            
+            Task {
+                if let duration = try? await newPlayer.currentItem?.asset.load(.duration) {
+                    await MainActor.run {
+                        self.duration = duration.seconds
+                    }
+                }
+            }
+            
+            // コンテンツの準備ができたら即時再生
+            newPlayer.play()
+            isPlaying = true
+            triggerAutoHide()
         }
     }
-    private func formatTime(_ seconds: Double) -> String { let m = Int(seconds) / 60; let s = Int(seconds) % 60; return String(format: "%d:%02d", m, s) }
-    private func resetZoom() { scale = 1.0; lastScale = 1.0; offset = .zero; lastOffset = .zero; zoomAnchor = .center; globalDragOffset = .zero; showUI = true }
+    
+    private func formatTime(_ seconds: Double) -> String {
+        let m = Int(seconds) / 60
+        let s = Int(seconds) % 60
+        return String(format: "%d:%02d", m, s)
+    }
+    
+    private func resetZoom() {
+        scale = 1.0
+        lastScale = 1.0
+        offset = .zero
+        lastOffset = .zero
+        zoomAnchor = .center
+        globalDragOffset = .zero
+        showUI = true
+    }
 }
 
-struct TransparentBackground: UIViewRepresentable { func makeUIView(context: Context) -> UIView { let view = UIView(); DispatchQueue.main.async { view.superview?.superview?.backgroundColor = .clear }; return view }; func updateUIView(_ uiView: UIView, context: Context) {} }
-struct PDFKitView: UIViewRepresentable { let url: URL; func makeUIView(context: Context) -> PDFView { let v = PDFView(); v.document = PDFDocument(url: url); v.autoScales = true; return v }; func updateUIView(_ uiView: PDFView, context: Context) {} }
+struct TransparentBackground: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView();
+        DispatchQueue.main.async { view.superview?.superview?.backgroundColor = .clear };
+        return view
+    };
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+struct PDFKitView: UIViewRepresentable {
+    let url: URL;
+    func makeUIView(context: Context) -> PDFView {
+        let v = PDFView();
+        v.document = PDFDocument(url: url);
+        v.autoScales = true;
+        return v
+    };
+    func updateUIView(_ uiView: PDFView, context: Context) {}
+}
