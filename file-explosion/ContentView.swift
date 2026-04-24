@@ -83,6 +83,7 @@ struct ContentView: View {
     @State var searchText = ""
     @State var sortOrder: [KeyPathComparator<SecretFile>] = [KeyPathComparator(\.creationDate, order: .reverse)]
     @State var folderSelection: FolderSelection? = .unclassified
+    @State var macShowHome: Bool = true
     
     // MARK: - Body
     /// 共通モディファイアはここに1か所にまとめる。
@@ -344,6 +345,7 @@ extension ContentView {
         showPasscodeEntry = false; inputPasscode = ""; faceIDFailCount = 0
         statusMessage = "認証してください"
         selectedAppFolderID = nil; showingFavoritesOnly = false; showingGallery = false
+        macShowHome = true
     }
     
     func refreshFiles() { secretFiles = FileManagerHelper.getAllSecretFiles() }
@@ -380,10 +382,11 @@ extension ContentView {
             for (index, item) in items.enumerated() {
                 DispatchQueue.main.async { processingMessage = "極秘処理中... (\(index + 1)/\(items.count))" }
                 let semaphore = DispatchSemaphore(value: 0)
-                let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "data"
                 item.loadTransferable(type: TempMediaFile.self) { result in
                     if case .success(let media?) = result {
                         autoreleasepool {
+                            // 実際に受け取ったファイルの拡張子をそのまま使う（オリジナル形式を維持）
+                            let ext = media.url.pathExtension.isEmpty ? "data" : media.url.pathExtension
                             KeyManager.createAndSaveKey()
                             _ = KeyManager.encryptFile(inputURL: media.url, outputURL: FileManagerHelper.generateNewFileURL(originalExtension: ext))
                             try? FileManager.default.removeItem(at: media.url)
@@ -422,6 +425,30 @@ extension ContentView {
         appFolders.removeAll(); fileFolderMap.removeAll(); favoriteFileIDs.removeAll(); saveFolders()
         checkInitialSetup()
         selectedAppFolderID = nil; showingFavoritesOnly = false; showingGallery = false
+    }
+    
+    /// 指定ファイル群をキャッシュに事前解読する（表示の高速化）
+    func preDecryptFiles(_ files: [SecretFile]) {
+        let targets = files.filter { !FileManager.default.fileExists(atPath: FileManagerHelper.getCacheURL(for: $0).path) }
+        guard !targets.isEmpty else { return }
+        isProcessing = true
+        var count = 0
+        processingMessage = "解読中... (0/\(targets.count))"
+        DispatchQueue.global(qos: .userInitiated).async {
+            for file in targets {
+                autoreleasepool { _ = KeyManager.decryptFile(inputURL: file.url, outputURL: FileManagerHelper.getCacheURL(for: file)) }
+                DispatchQueue.main.async { count += 1; processingMessage = "解読中... (\(count)/\(targets.count))" }
+            }
+            DispatchQueue.main.async { isProcessing = false; refreshFiles() }
+        }
+    }
+    
+    /// 選択中のフォルダにあるファイルをすべて復号して書き出す
+    func decryptCurrentFolderFiles() {
+        let files = currentFilteredFiles(for: selectedFolder)
+        guard !files.isEmpty else { return }
+        selectedFileIDs = Set(files.map { $0.id })
+        exportSelectedFiles()
     }
     
     func currentFilteredFiles(for folderIndex: Int) -> [SecretFile] {
@@ -509,11 +536,19 @@ struct TimerDisplayView: View {
         if lastAccessDate == 0 { return }
         let passed = Date().timeIntervalSince1970 - lastAccessDate
         if passed > timerLimitSeconds {
-            timeRemainingString = "00日 00:00:00"
+            timeRemainingString = "00:00:00"
         } else {
             let rem = max(0, timerLimitSeconds - passed)
-            let format = String(localized: "%02d日 %02d:%02d:%02d")
-            timeRemainingString = String(format: format, Int(rem)/86400, (Int(rem)%86400)/3600, (Int(rem)%3600)/60, Int(rem)%60)
+            let days = Int(rem) / 86400
+            let hours = (Int(rem) % 86400) / 3600
+            let minutes = (Int(rem) % 3600) / 60
+            let seconds = Int(rem) % 60
+            if days > 0 {
+                let format = String(localized: "%02d日 %02d:%02d:%02d")
+                timeRemainingString = String(format: format, days, hours, minutes, seconds)
+            } else {
+                timeRemainingString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+            }
         }
     }
 }

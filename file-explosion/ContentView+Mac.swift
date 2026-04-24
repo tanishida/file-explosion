@@ -3,25 +3,45 @@ import PhotosUI
 
 // MARK: - Mac / iPad Body
 extension ContentView {
-
+    
     /// Mac・iPad専用のルートビュー（Finderライクレイアウト）。
     /// ここを修正してもiPhone側（ContentView+iPhone.swift）には影響しない。
     var finderBody: some View {
         Group {
             if !isUnlocked {
-                lockScreenView
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: 0) {
+                    if lastAccessDate != 0 {
+                        VStack(spacing: 4) {
+                            Text("全ファイル消滅まで残り")
+                                .font(.system(.title2, design: .monospaced)).fontWeight(.bold)
+                                .foregroundColor(.red)
+                            TimerDisplayView(isUnlocked: false)
+                        }
+                        .padding(.vertical, 16)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.06))
+                        Divider()
+                    }
+                    lockScreenView
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 NavigationSplitView {
                     finderSidebar
                 } detail: {
-                    finderDetailView
+                    if macShowHome {
+                        macDashboardView
+                    } else {
+                        finderDetailView
+                    }
                 }
                 .onChange(of: selectedFolder) { _, _ in
                     folderSelection = .unclassified
                 }
                 .onChange(of: folderSelection) { _, newValue in
                     guard let selection = newValue else { return }
+                    macShowHome = false
                     switch selection {
                     case .favorites:
                         selectedAppFolderID = nil; showingFavoritesOnly = true
@@ -34,11 +54,154 @@ extension ContentView {
             }
         }
     }
-
+    
+    // MARK: - ダッシュボード（ホーム）
+    
+    var macDashboardView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 32) {
+                
+                // タイマー
+                if lastAccessDate != 0 {
+                    HStack(spacing: 12) {
+                        Image(systemName: "timer").font(.title2).foregroundColor(.red)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("自爆タイマー").font(.subheadline).foregroundColor(.secondary)
+                            Text("全ファイル消滅まであと")
+                                .font(.system(.title2, design: .monospaced)).fontWeight(.bold)
+                                .foregroundColor(isUnlocked ? .green : .red)
+                            TimerDisplayView(isUnlocked: isUnlocked)
+                        }
+                        Spacer()
+                        Button("設定") { showingTimerSetup = true }
+                            .buttonStyle(.bordered)
+                    }
+                    .padding()
+                    .background(Color.secondary.opacity(0.08))
+                    .cornerRadius(12)
+                }
+                
+                // ファイル統計
+                let totalCount = secretFiles.count
+                let imageCount = secretFiles.filter { $0.isImage }.count
+                let videoCount = secretFiles.filter { $0.isVideo }.count
+                let pdfCount   = secretFiles.filter { $0.isPDF }.count
+                let otherCount = totalCount - imageCount - videoCount - pdfCount
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("保管状況").font(.headline)
+                    HStack(spacing: 12) {
+                        macStatCard(icon: "photo.fill",          color: .green,  label: "写真",  count: imageCount,  categoryIndex: 0)
+                        macStatCard(icon: "play.rectangle.fill", color: .blue,   label: "動画",  count: videoCount,  categoryIndex: 1)
+                        macStatCard(icon: "doc.richtext.fill",   color: .red,    label: "PDF",   count: pdfCount,    categoryIndex: 2)
+                        macStatCard(icon: "doc.fill",            color: .gray,   label: "その他", count: otherCount, categoryIndex: 3)
+                    }
+                }
+                
+                // 操作パネル
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("操作").font(.headline)
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        macActionButton(
+                            label: "写真/動画を追加",
+                            icon: "photo.badge.plus",
+                            color: .green
+                        ) {
+                            // PhotosPickerはtoolbar経由なので、ファイル追加シートを開く
+                        }
+                        .overlay {
+                            PhotosPicker(
+                                selection: $selectedItems,
+                                matching: .any(of: [.images, .videos]),
+                                preferredItemEncoding: .current
+                            ) { Color.clear }
+                        }
+                        
+                        macActionButton(
+                            label: "ファイルを追加",
+                            icon: "doc.badge.plus",
+                            color: .indigo
+                        ) { showFileImporter = true }
+                        
+                        macActionButton(
+                            label: "一括事前解読",
+                            icon: "bolt.fill",
+                            color: .orange
+                        ) { batchDecryptAll() }
+                        
+                        macActionButton(
+                            label: "パスコードを変更",
+                            icon: "lock.rotation",
+                            color: .teal
+                        ) { isFirstSetupMode = false; showingPasscodeSetup = true }
+                        
+                        macActionButton(
+                            label: "システムを初期化",
+                            icon: "trash.fill",
+                            color: .red
+                        ) { showingResetConfirmation = true }
+                    }
+                }
+            }
+            .padding(28)
+        }
+        .navigationTitle("LimitBox")
+    }
+    
+    private func macStatCard(icon: String, color: Color, label: String, count: Int, categoryIndex: Int) -> some View {
+        Button {
+            selectedFolder = categoryIndex
+            folderSelection = .unclassified
+            selectedAppFolderID = nil
+            showingFavoritesOnly = false
+            macShowHome = false
+        } label: {
+            VStack(spacing: 8) {
+                Image(systemName: icon).font(.title2).foregroundColor(color)
+                Text("\(count)").font(.title).bold()
+                Text(label).font(.caption).foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(Color.secondary.opacity(0.07))
+            .cornerRadius(12)
+            .contentShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func macActionButton(label: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .frame(width: 36, height: 36)
+                    .background(color)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                Text(label)
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+                Spacer()
+            }
+            .padding(12)
+            .background(Color.secondary.opacity(0.07))
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
+    }
+    
     // MARK: - サイドバー
-
+    
     private var finderSidebar: some View {
         List {
+            Section {
+                Label("ホーム", systemImage: "house.fill")
+                    .contentShape(Rectangle())
+                    .listRowBackground(macShowHome ? Color.accentColor.opacity(0.25) : Color.clear)
+                    .onTapGesture { macShowHome = true }
+            }
+            
             Section("カテゴリ") {
                 ForEach(0..<4, id: \.self) { i in
                     Label(
@@ -46,47 +209,76 @@ extension ContentView {
                         systemImage: ["photo.fill", "play.rectangle.fill", "doc.richtext.fill", "doc.fill"][i]
                     )
                     .contentShape(Rectangle())
-                    .listRowBackground(selectedFolder == i ? Color.accentColor.opacity(0.25) : Color.clear)
+                    .listRowBackground((!macShowHome && selectedFolder == i) ? Color.accentColor.opacity(0.25) : Color.clear)
                     .onTapGesture {
                         selectedFolder = i
                         folderSelection = .unclassified
+                        macShowHome = false
                     }
                 }
             }
-
-            Section("フォルダ") {
-                Label("未分類", systemImage: "tray.2.fill")
-                    .contentShape(Rectangle())
-                    .listRowBackground(folderSelection == .unclassified ? Color.accentColor.opacity(0.25) : Color.clear)
-                    .onTapGesture { folderSelection = .unclassified }
-
-                Label("お気に入り", systemImage: "heart.fill")
-                    .foregroundColor(.pink)
-                    .contentShape(Rectangle())
-                    .listRowBackground(folderSelection == .favorites ? Color.accentColor.opacity(0.25) : Color.clear)
-                    .onTapGesture { folderSelection = .favorites }
-
-                ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
-                    Label(folder.name, systemImage: "folder.fill")
+            
+            if !macShowHome {
+                Section("フォルダ") {
+                    Label("未分類", systemImage: "tray.2.fill")
                         .contentShape(Rectangle())
-                        .listRowBackground(folderSelection == .folder(folder.id) ? Color.accentColor.opacity(0.25) : Color.clear)
-                        .onTapGesture { folderSelection = .folder(folder.id) }
+                        .listRowBackground((!macShowHome && folderSelection == .unclassified) ? Color.accentColor.opacity(0.25) : Color.clear)
+                        .onTapGesture { folderSelection = .unclassified }
                         .contextMenu {
                             Button {
-                                editingFolder = folder
-                                editingFolderName = folder.name
-                                folderAlertMode = .rename
-                                showingFolderAlert = true
-                            } label: { Label("名前を変更", systemImage: "pencil") }
-                            Button(role: .destructive) { deleteFolder(folder) } label: {
-                                Label("削除", systemImage: "trash")
-                            }
+                                let targets = secretFiles.filter { f in
+                                    let matchCat: Bool
+                                    switch selectedFolder {
+                                    case 0: matchCat = f.isImage
+                                    case 1: matchCat = f.isVideo
+                                    case 2: matchCat = f.isPDF
+                                    default: matchCat = !f.isImage && !f.isVideo && !f.isPDF
+                                    }
+                                    return matchCat && fileFolderMap[f.id] == nil && !favoriteFileIDs.contains(f.id)
+                                }
+                                preDecryptFiles(targets)
+                            } label: { Label("解読", systemImage: "lock.open.fill") }
                         }
+                    
+                    Label("お気に入り", systemImage: "heart.fill")
+                        .foregroundColor(.pink)
+                        .contentShape(Rectangle())
+                        .listRowBackground((!macShowHome && folderSelection == .favorites) ? Color.accentColor.opacity(0.25) : Color.clear)
+                        .onTapGesture { folderSelection = .favorites }
+                        .contextMenu {
+                            Button {
+                                let targets = secretFiles.filter { f in
+                                    favoriteFileIDs.contains(f.id)
+                                }
+                                preDecryptFiles(targets)
+                            } label: { Label("解読", systemImage: "lock.open.fill") }
+                        }
+                    
+                    ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
+                        Label(folder.name, systemImage: "folder.fill")
+                            .contentShape(Rectangle())
+                            .listRowBackground((!macShowHome && folderSelection == .folder(folder.id)) ? Color.accentColor.opacity(0.25) : Color.clear)
+                            .onTapGesture { folderSelection = .folder(folder.id) }
+                            .contextMenu {
+                                Button {
+                                    let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
+                                    preDecryptFiles(targets)
+                                } label: { Label("解読", systemImage: "lock.open.fill") }
+                                Button {
+                                    editingFolder = folder
+                                    editingFolderName = folder.name
+                                    folderAlertMode = .rename
+                                    showingFolderAlert = true
+                                } label: { Label("名前を変更", systemImage: "pencil") }
+                                Button(role: .destructive) { deleteFolder(folder) } label: {
+                                    Label("削除", systemImage: "trash")
+                                }
+                            }
+                    }
                 }
-            }
+            } // if !macShowHome
         }
         .listStyle(.sidebar)
-        .navigationTitle("LimitBox")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -97,9 +289,9 @@ extension ContentView {
             }
         }
     }
-
+    
     // MARK: - 詳細ペイン
-
+    
     @ViewBuilder
     var finderDetailView: some View {
         if isDestroyed {
@@ -120,9 +312,9 @@ extension ContentView {
             }
         }
     }
-
+    
     // MARK: - ツールバー
-
+    
     var finderToolbar: some View {
         HStack(spacing: 12) {
             Picker("", selection: $selectedFolder) {
@@ -133,17 +325,22 @@ extension ContentView {
             }
             .pickerStyle(.segmented)
             .frame(maxWidth: 360)
-
+            
             Spacer()
-
+            
             if lastAccessDate != 0 {
-                HStack(spacing: 4) {
-                    Image(systemName: "timer").foregroundColor(.secondary).font(.caption)
-                    TimerDisplayView(isUnlocked: isUnlocked)
-                        .font(.system(.caption, design: .monospaced))
+                VStack(spacing: 1) {
+                    Text("全ファイル消滅まであと")
+                        .font(.system(.caption, design: .monospaced)).fontWeight(.bold)
+                        .foregroundColor(isUnlocked ? .green : .red)
+                    HStack(spacing: 4) {
+                        Image(systemName: "timer").foregroundColor(.secondary).font(.caption)
+                        TimerDisplayView(isUnlocked: isUnlocked)
+                            .font(.system(.caption, design: .monospaced))
+                    }
                 }
             }
-
+            
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass").foregroundColor(.secondary)
                 TextField("検索", text: $searchText)
@@ -159,16 +356,20 @@ extension ContentView {
             .padding(.horizontal, 8).padding(.vertical, 5)
             .background(Color.secondary.opacity(0.1))
             .cornerRadius(8)
-
+            
             Picker("表示", selection: $viewMode) {
                 Image(systemName: "square.grid.2x2").tag(ViewMode.grid)
                 Image(systemName: "list.bullet").tag(ViewMode.list)
             }
             .pickerStyle(.segmented)
             .frame(width: 80)
-
+            
             Menu {
-                PhotosPicker(selection: $selectedItems, matching: .any(of: [.images, .videos])) {
+                PhotosPicker(
+                    selection: $selectedItems,
+                    matching: .any(of: [.images, .videos]),
+                    preferredItemEncoding: .current
+                ) {
                     Label("写真/動画を追加", systemImage: "photo.badge.plus")
                 }
                 Button { showFileImporter = true } label: {
@@ -178,6 +379,10 @@ extension ContentView {
                 Button { batchDecryptAll() } label: {
                     Label("一括事前解読", systemImage: "bolt.fill")
                 }
+                Button { decryptCurrentFolderFiles() } label: {
+                    Label("フォルダ内を全て書き出し", systemImage: "lock.open.fill")
+                }
+                .disabled(filteredFiles.isEmpty)
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 14, weight: .semibold))
@@ -188,7 +393,7 @@ extension ContentView {
             }
             .menuStyle(.button)
             .buttonStyle(.plain)
-
+            
             if !selectedFileIDs.isEmpty {
                 Button { exportSelectedFiles() } label: {
                     Image(systemName: "square.and.arrow.up")
@@ -208,9 +413,9 @@ extension ContentView {
         .background(.bar)
         .overlay(alignment: .bottom) { Divider() }
     }
-
+    
     // MARK: - グリッドビュー
-
+    
     var finderGridView: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 8)], spacing: 16) {
@@ -236,9 +441,9 @@ extension ContentView {
         }
         .background(Color(uiColor: .secondarySystemBackground))
     }
-
+    
     // MARK: - リストビュー
-
+    
     var finderListView: some View {
         Table(filteredFiles, selection: $selectedFileIDs, sortOrder: $sortOrder) {
             TableColumn("名前") { file in
@@ -250,18 +455,18 @@ extension ContentView {
                 }
             }
             .width(min: 200, ideal: 300)
-
+            
             TableColumn("種別", value: \.typeLabel) { file in
                 Text(file.typeLabel).foregroundColor(.secondary)
             }
             .width(60)
-
+            
             TableColumn("サイズ") { file in
                 Text(file.fileSizeLabel).foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .width(80)
-
+            
             TableColumn("追加日", value: \.creationDate) { file in
                 Text(file.creationDateLabel).foregroundColor(.secondary)
             }
@@ -276,9 +481,9 @@ extension ContentView {
             // ソート実装は今後追加予定
         }
     }
-
+    
     // MARK: - ステータスバー
-
+    
     var finderStatusBar: some View {
         HStack {
             Text("\(filteredFiles.count)項目")
@@ -296,9 +501,9 @@ extension ContentView {
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
     }
-
+    
     // MARK: - 空ビュー
-
+    
     var finderEmptyView: some View {
         VStack(spacing: 12) {
             Spacer()
@@ -307,13 +512,13 @@ extension ContentView {
             Text(searchText.isEmpty
                  ? (showingFavoritesOnly ? "お気に入りがありません" : "ファイルがありません")
                  : "「\(searchText)」に一致するファイルがありません")
-                .foregroundColor(.secondary)
+            .foregroundColor(.secondary)
             Spacer()
         }
     }
-
+    
     // MARK: - フィルタリング
-
+    
     var filteredFiles: [SecretFile] {
         let base = currentFilteredFiles(for: selectedFolder)
         guard !searchText.isEmpty else { return base }
@@ -322,9 +527,9 @@ extension ContentView {
             || $0.fileExtension.localizedCaseInsensitiveContains(searchText)
         }
     }
-
+    
     // MARK: - コンテキストメニュー
-
+    
     @ViewBuilder
     func macContextMenu(for file: SecretFile) -> some View {
         Button {
@@ -366,33 +571,40 @@ struct MacGridItem: View {
     let onTap: () -> Void
     let onOpen: () -> Void
     let contextMenu: AnyView
-
+    
     var body: some View {
         VStack(spacing: 6) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? Color.accentColor.opacity(0.2) : Color.secondary.opacity(0.08))
-                    .frame(width: 100, height: 80)
-                Image(systemName: file.typeIcon)
-                    .font(.system(size: 36))
-                    .foregroundColor(file.isImage ? .green : file.isVideo ? .blue : file.isPDF ? .red : .gray)
+            ZStack(alignment: .topTrailing) {
+                FileThumbnailView(file: file, onTap: onTap)
+                    .frame(width: 110, height: 90)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
+                    )
+                
                 if isFavorite {
-                    Image(systemName: "heart.fill").font(.caption2).foregroundColor(.pink)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                        .padding(6)
+                    Image(systemName: "heart.fill")
+                        .font(.caption2)
+                        .foregroundColor(.pink)
+                        .padding(5)
+                        .background(Circle().fill(Color.black.opacity(0.4)))
+                        .padding(5)
                 }
             }
-            .frame(width: 100, height: 80)
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2))
-
+            .frame(width: 110, height: 90)
+            .onTapGesture(count: 2) { onOpen() }
+            
             Text(file.displayName)
-                .font(.caption).lineLimit(2).multilineTextAlignment(.center).frame(width: 100)
+                .font(.caption).lineLimit(2).multilineTextAlignment(.center).frame(width: 110)
             Text(file.fileSizeLabel)
                 .font(.caption2).foregroundColor(.secondary)
         }
         .contentShape(Rectangle())
-        .onTapGesture(count: 2) { onOpen() }
-        .onTapGesture { onTap() }
         .contextMenu { contextMenu }
     }
 }
