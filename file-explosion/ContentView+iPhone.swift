@@ -15,22 +15,25 @@ extension ContentView {
     
     // MARK: - メインコンテンツ
     
+    @ViewBuilder
     var mainContentView: some View {
-        VStack(spacing: 0) {
-            statusBanner
-            Divider()
-            if isDestroyed {
-                destroyedView
-            } else if !isUnlocked {
-                lockScreenView
-            } else {
-                TabView(selection: $selectedMainTab) {
-                    controlPanelView
-                        .tabItem { Label("操作", systemImage: "slider.horizontal.3") }
-                        .tag(0)
-                    folderView
-                        .tabItem { Label("ファイル", systemImage: "folder.fill") }
-                        .tag(1)
+        if isDestroyed {
+            destroyedView
+        } else {
+            VStack(spacing: 0) {
+                statusBanner
+                Divider()
+                if !isUnlocked {
+                    lockScreenView
+                } else {
+                    TabView(selection: $selectedMainTab) {
+                        controlPanelView
+                            .tabItem { Label("操作", systemImage: "slider.horizontal.3") }
+                            .tag(0)
+                        folderView
+                            .tabItem { Label("ファイル", systemImage: "folder.fill") }
+                            .tag(1)
+                    }
                 }
             }
         }
@@ -46,7 +49,7 @@ extension ContentView {
                 Text(statusMessage).font(.subheadline).foregroundColor(.primary)
             }
             if !isDestroyed && lastAccessDate != 0 {
-                Text("全ファイル消滅まで残り")
+                Text("全ファイル消滅まであと")
                     .font(.system(.title2, design: .monospaced)).fontWeight(.bold)
                     .foregroundColor(isUnlocked ? .green : .red)
                 TimerDisplayView(isUnlocked: isUnlocked)

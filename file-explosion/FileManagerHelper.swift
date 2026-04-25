@@ -23,23 +23,29 @@ class FileManagerHelper {
         }
     }
     
-    // 📁 秘密の暗号化ファイルを保存する「絶対に消えない」専用ディレクトリ
+    // 📁 秘密の暗号化ファイルを保存する専用ディレクトリ（バックアップ対象外）
     static var secretDirectory: URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let dir = paths[0].appendingPathComponent("SecretFiles")
-        
-        // フォルダが無ければ作る
+        var dir = paths[0].appendingPathComponent("SecretFiles")
         if !FileManager.default.fileExists(atPath: dir.path) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
+        // iCloud / iTunes バックアップから除外
+        var rv = URLResourceValues()
+        rv.isExcludedFromBackup = true
+        try? dir.setResourceValues(rv)
         return dir
     }
-    // ▼ 🆕 追加：サムネイル専用の隠しディレクトリ
+
+    // ▼ サムネイル専用の隠しディレクトリ（バックアップ対象外）
     static var thumbnailDirectory: URL {
-        let dir = secretDirectory.appendingPathComponent(".thumbnails")
+        var dir = secretDirectory.appendingPathComponent(".thumbnails")
         if !FileManager.default.fileExists(atPath: dir.path) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
+        var rv = URLResourceValues()
+        rv.isExcludedFromBackup = true
+        try? dir.setResourceValues(rv)
         return dir
     }
     // 🗑️ 解読したファイル（キャッシュ）を置くディレクトリ（Cachesフォルダ配下）
@@ -119,6 +125,15 @@ class FileManagerHelper {
                 try? fileManager.removeItem(at: file)
             }
         }
+    }
+    
+    // 🚨 起動時に呼ぶ：前回クラッシュ等で残った一時平文ファイルを全削除
+    static func clearAllPlaintextResiduals() {
+        let tmp = FileManager.default.temporaryDirectory
+        if let files = try? FileManager.default.contentsOfDirectory(at: tmp, includingPropertiesForKeys: nil) {
+            files.forEach { try? FileManager.default.removeItem(at: $0) }
+        }
+        clearTempCache()
     }
     
     // 🚨 緊急事態（自爆タイマーや初期化）用：暗号化された元データも含めて【全て】を完全に消去する

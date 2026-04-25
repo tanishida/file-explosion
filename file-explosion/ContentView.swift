@@ -100,7 +100,11 @@ struct ContentView: View {
         .overlay { processingOverlay }
         .disabled(isProcessing)
         .onReceive(timer) { _ in checkTimeLimit() }
-        .onAppear { checkInitialSetup(); loadFolders() }
+        .onAppear { 
+            FileManagerHelper.clearAllPlaintextResiduals()
+            checkInitialSetup()
+            loadFolders()
+        }
         .onChange(of: scenePhase) { _, phase in
             if (phase == .background || phase == .inactive) && isUnlocked { lockApp() }
             else if phase == .active { checkTimeLimit() }

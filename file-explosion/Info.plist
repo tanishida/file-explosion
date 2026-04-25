@@ -4,5 +4,9 @@
 <dict>
 	<key>CFBundleGetInfoString</key>
 	<string>Privacy - Photo Library Usage Description</string>
+	<key>UIFileSharingEnabled</key>
+	<false/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<false/>
 </dict>
 </plist>

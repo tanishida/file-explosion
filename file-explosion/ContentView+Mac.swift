@@ -8,7 +8,10 @@ extension ContentView {
     /// ここを修正してもiPhone側（ContentView+iPhone.swift）には影響しない。
     var finderBody: some View {
         Group {
-            if !isUnlocked {
+            if isDestroyed {
+                destroyedView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if !isUnlocked {
                 VStack(spacing: 0) {
                     if lastAccessDate != 0 {
                         VStack(spacing: 4) {
@@ -294,22 +297,18 @@ extension ContentView {
     
     @ViewBuilder
     var finderDetailView: some View {
-        if isDestroyed {
-            destroyedView
-        } else {
-            VStack(spacing: 0) {
-                finderToolbar
-                if filteredFiles.isEmpty {
-                    finderEmptyView
+        VStack(spacing: 0) {
+            finderToolbar
+            if filteredFiles.isEmpty {
+                finderEmptyView
+            } else {
+                if viewMode == .grid {
+                    finderGridView
                 } else {
-                    if viewMode == .grid {
-                        finderGridView
-                    } else {
-                        finderListView
-                    }
+                    finderListView
                 }
-                finderStatusBar
             }
+            finderStatusBar
         }
     }
     
