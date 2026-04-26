@@ -17,8 +17,6 @@ enum FolderSelection: Hashable {
 }
 
 struct ContentView: View {
-    @State private var isMacOrPad: Bool = UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac
-    
     // MARK: - 状態管理
     @State var statusMessage: LocalizedStringKey = "認証してください"
     @State var isDestroyed = false
@@ -77,6 +75,14 @@ struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
+    private var isMacOrPad: Bool {
+#if os(macOS)
+        true
+#else
+        horizontalSizeClass == .regular
+#endif
+    }
+    
     // MARK: - Mac/iPad用
     enum ViewMode { case grid, list }
     @State var viewMode: ViewMode = .grid
@@ -84,44 +90,81 @@ struct ContentView: View {
     @State var sortOrder: [KeyPathComparator<SecretFile>] = [KeyPathComparator(\.creationDate, order: .reverse)]
     @State var folderSelection: FolderSelection? = .unclassified
     @State var macShowHome: Bool = true
+    @State var isDropTargetedHome: Bool = false
+    @State var isDropTargetedFiles: Bool = false
+    @State var sidebarDropTarget: FolderSelection? = nil
+    @State var gridItemFrames: [UUID: CGRect] = [:]
+    @State var dragStartPos: CGPoint? = nil
+    @State var dragCurrentPos: CGPoint? = nil
     
     // MARK: - Body
     /// 共通モディファイアはここに1か所にまとめる。
     /// プラットフォーム固有の実装は ContentView+iPhone.swift / ContentView+Mac.swift に分離。
     var body: some View {
-        Group {
-            if isMacOrPad {
-                finderBody   // → ContentView+Mac.swift
-            } else {
-                iPhoneBody   // → ContentView+iPhone.swift
+        bodyContent
+    }
+    
+    @ViewBuilder
+    private var platformRootView: some View {
+        if isMacOrPad {
+            finderBody   // → ContentView+Mac.swift
+        } else {
+            iPhoneBody   // → ContentView+iPhone.swift
+        }
+    }
+    
+    private var baseBodyContent: some View {
+        platformRootView
+            .overlay { processingOverlay }
+            .disabled(isProcessing)
+            .onReceive(timer) { _ in checkTimeLimit() }
+            .onAppear {
+                FileManagerHelper.clearAllPlaintextResiduals()
+                checkInitialSetup()
+                loadFolders()
             }
-        }
-        // ── 以下は iPhone / Mac 共通のモディファイア ──────────────────────────
-        .overlay { processingOverlay }
-        .disabled(isProcessing)
-        .onReceive(timer) { _ in checkTimeLimit() }
-        .onAppear { checkInitialSetup(); loadFolders() }
-        .onChange(of: scenePhase) { _, phase in
-            if (phase == .background || phase == .inactive) && isUnlocked { lockApp() }
-            else if phase == .active { checkTimeLimit() }
-        }
-        .onChange(of: selectedItems) { _, _ in processSelectedPhotos() }
-        .onChange(of: timerLimitSeconds) { _, _ in lastAccessDate = Date().timeIntervalSince1970 }
-        .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [.image, .movie, .pdf, .item],
-            allowsMultipleSelection: true
-        ) { result in processImportedFiles(result: result) }
+            .onChange(of: scenePhase) { _, phase in
+                if (phase == .background || phase == .inactive) && isUnlocked { lockApp() }
+                else if phase == .active { checkTimeLimit() }
+            }
+            .onChange(of: selectedItems) { _, _ in processSelectedPhotos() }
+            .onChange(of: timerLimitSeconds) { _, _ in lastAccessDate = Date().timeIntervalSince1970 }
+    }
+    
+    private var bodyContent: some View {
+        baseBodyContent
+            .fileImporter(
+                isPresented: $showFileImporter,
+                allowedContentTypes: [.image, .movie, .pdf, .item],
+                allowsMultipleSelection: true
+            ) { result in processImportedFiles(result: result) }
+#if os(iOS)
             .fullScreenCover(isPresented: $showingPasscodeSetup) {
                 PasscodeSetupView(isUnlocked: $isUnlocked, isFirstSetup: isFirstSetupMode)
             }
             .fullScreenCover(isPresented: $showingGallery, onDismiss: {
                 StorageCleaner.clearAllTempAndCacheData()
             }) { gallerySheetContent }
-            .sheet(isPresented: $showShareSheet, onDismiss: { cleanupExportedFiles() }) {
-                ShareSheet(activityItems: filesToShare)
+#else
+            .sheet(isPresented: $showingPasscodeSetup) {
+                PasscodeSetupView(isUnlocked: $isUnlocked, isFirstSetup: isFirstSetupMode)
             }
+            .sheet(isPresented: $showingGallery, onDismiss: {
+                StorageCleaner.clearAllTempAndCacheData()
+            }) { gallerySheetContent }
+#endif
+            .sheet(isPresented: $showShareSheet, onDismiss: { cleanupExportedFiles() }) {
+#if os(iOS)
+                ShareSheet(activityItems: filesToShare)
+#else
+                Text("共有シートはMacではサポートされていません")
+#endif
+            }
+#if os(iOS)
             .fullScreenCover(isPresented: $showingTimerSetup) { TimerSetupView() }
+#else
+            .sheet(isPresented: $showingTimerSetup) { TimerSetupView() }
+#endif
             .alert(folderAlertMode == .create ? "新規フォルダ" : "名前を変更", isPresented: $showingFolderAlert) {
                 TextField("フォルダ名", text: $editingFolderName)
                 Button("キャンセル", role: .cancel) { editingFolderName = "" }
@@ -509,6 +552,7 @@ struct TempMediaFile: Transferable {
     }
 }
 
+#if os(iOS)
 struct ShareSheet: UIViewControllerRepresentable {
     var activityItems: [Any]
     func makeUIViewController(context: Context) -> UIActivityViewController {
@@ -516,6 +560,7 @@ struct ShareSheet: UIViewControllerRepresentable {
     }
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
+#endif
 
 struct TimerDisplayView: View {
     var isUnlocked: Bool
@@ -602,9 +647,15 @@ struct TimerSetupView: View {
                 }
                 .padding(.horizontal, 30).padding(.bottom, 20)
             }
+#if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+#endif
             .toolbar {
+#if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) { Button("閉じる") { dismiss() } }
+#else
+                ToolbarItem(placement: .automatic) { Button("閉じる") { dismiss() } }
+#endif
             }
             .onAppear { tempTimerLimit = timerLimitSeconds }
         }

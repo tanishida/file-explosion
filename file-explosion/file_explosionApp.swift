@@ -28,38 +28,11 @@ struct file_explosionApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-        }.onChange(of: scenePhase) { phase in
+        }.onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 StorageCleaner.clearAllTempAndCacheData()
             }
         }
         .modelContainer(sharedModelContainer)
-    }
-}
-
-class StorageCleaner {
-    /// バックグラウンド移行時：tmpだけ全削除、復号キャッシュは10分以上前のものだけ削除
-    static func clearAllTempAndCacheData() {
-        FileManagerHelper.clearTempDirectory()
-        FileManagerHelper.clearExpiredDecryptedCache(olderThan: 600)
-    }
-    
-    /// 復号キャッシュを全消去（アプリ終了時など）
-    static func clearDecryptedCache() {
-        FileManagerHelper.clearTempCache()
-    }
-    
-    static func clearCachesExcept(currentCacheURL: URL) {
-        let fileManager = FileManager.default
-        if let files = try? fileManager.contentsOfDirectory(
-            at: FileManagerHelper.cacheDirectory,
-            includingPropertiesForKeys: nil
-        ) {
-            for file in files {
-                if file.lastPathComponent != currentCacheURL.lastPathComponent {
-                    try? fileManager.removeItem(at: file)
-                }
-            }
-        }
     }
 }

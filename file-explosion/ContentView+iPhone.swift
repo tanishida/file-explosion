@@ -1,9 +1,10 @@
 import SwiftUI
 import PhotosUI
 
+#if os(iOS)
+
 // MARK: - iPhone Body
 extension ContentView {
-    
     /// iPhone専用のルートビュー。
     var iPhoneBody: some View {
         NavigationStack {
@@ -12,30 +13,33 @@ extension ContentView {
                 .toolbar { toolbarContent }
         }
     }
-    
+
     // MARK: - メインコンテンツ
-    
+
+    @ViewBuilder
     var mainContentView: some View {
-        VStack(spacing: 0) {
-            statusBanner
-            Divider()
-            if isDestroyed {
-                destroyedView
-            } else if !isUnlocked {
-                lockScreenView
-            } else {
-                TabView(selection: $selectedMainTab) {
-                    controlPanelView
-                        .tabItem { Label("操作", systemImage: "slider.horizontal.3") }
-                        .tag(0)
-                    folderView
-                        .tabItem { Label("ファイル", systemImage: "folder.fill") }
-                        .tag(1)
+        if isDestroyed {
+            destroyedView
+        } else {
+            VStack(spacing: 0) {
+                statusBanner
+                Divider()
+                if !isUnlocked {
+                    lockScreenView
+                } else {
+                    TabView(selection: $selectedMainTab) {
+                        controlPanelView
+                            .tabItem { Label("操作", systemImage: "slider.horizontal.3") }
+                            .tag(0)
+                        folderView
+                            .tabItem { Label("ファイル", systemImage: "folder.fill") }
+                            .tag(1)
+                    }
                 }
             }
         }
     }
-    
+
     private var statusBanner: some View {
         VStack(spacing: 5) {
             if isDestroyed {
@@ -46,7 +50,7 @@ extension ContentView {
                 Text(statusMessage).font(.subheadline).foregroundColor(.primary)
             }
             if !isDestroyed && lastAccessDate != 0 {
-                Text("全ファイル消滅まで残り")
+                Text("全ファイル消滅まであと")
                     .font(.system(.title2, design: .monospaced)).fontWeight(.bold)
                     .foregroundColor(isUnlocked ? .green : .red)
                 TimerDisplayView(isUnlocked: isUnlocked)
@@ -56,9 +60,9 @@ extension ContentView {
         .frame(maxWidth: .infinity)
         .background(Color.secondary.opacity(0.05))
     }
-    
+
     // MARK: - ロック画面
-    
+
     var lockScreenView: some View {
         VStack(spacing: 30) {
             Spacer()
@@ -96,9 +100,9 @@ extension ContentView {
             Spacer()
         }
     }
-    
+
     // MARK: - コントロールパネル
-    
+
     var controlPanelView: some View {
         ScrollView {
             VStack(spacing: 25) {
@@ -109,7 +113,7 @@ extension ContentView {
                         .background(Color.orange).foregroundColor(.white).cornerRadius(10)
                 }
                 .padding(.horizontal)
-                
+
                 SectionHeader(title: "パフォーマンス")
                 Button(action: { batchDecryptAll() }) {
                     Label("全ファイルを一括事前解読", systemImage: "bolt.fill")
@@ -117,7 +121,7 @@ extension ContentView {
                         .background(Color.blue).foregroundColor(.white).cornerRadius(10)
                 }
                 .padding(.horizontal)
-                
+
                 SectionHeader(title: "極秘データの追加")
                 HStack(spacing: 15) {
                     PhotosPicker(
@@ -132,6 +136,7 @@ extension ContentView {
                         .frame(maxWidth: .infinity).padding()
                         .background(Color.green).foregroundColor(.white).cornerRadius(10)
                     }
+
                     Button(action: { showFileImporter = true }) {
                         VStack {
                             Image(systemName: "doc.badge.plus")
@@ -146,9 +151,9 @@ extension ContentView {
             .padding(.vertical)
         }
     }
-    
+
     // MARK: - フォルダビュー
-    
+
     var folderView: some View {
         VStack(spacing: 0) {
             Picker("フォルダ", selection: $selectedFolder) {
@@ -159,11 +164,11 @@ extension ContentView {
             }
             .pickerStyle(.segmented)
             .padding()
-            
+
             folderChipScroll
-            
+
             Divider()
-            
+
             TabView(selection: $selectedFolder) {
                 fileGrid(for: 0).tag(0)
                 fileGrid(for: 1).tag(1)
@@ -172,13 +177,13 @@ extension ContentView {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: selectedFolder)
-            
+
             if isSelectionMode {
                 iPhoneSelectionBar
             }
         }
     }
-    
+
     private var folderChipScroll: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
@@ -186,77 +191,99 @@ extension ContentView {
                            isSelected: selectedAppFolderID == nil && !showingFavoritesOnly) {
                     selectedAppFolderID = nil; showingFavoritesOnly = false
                 }
-                           .contextMenu {
-                               Button(action: {
-                                   let targets = secretFiles.filter { f in
-                                       let matchCat = categoryMatches(f, folder: selectedFolder)
-                                       return matchCat && fileFolderMap[f.id] == nil && !favoriteFileIDs.contains(f.id)
-                                   }
-                                   preDecryptFiles(targets)
-                               }) { Label("フォルダ内のファイルを全て解読", systemImage: "lock.open.fill") }
-                               Button(action: {
-                                   let targets = secretFiles.filter { f in
-                                       let matchCat = categoryMatches(f, folder: selectedFolder)
-                                       return matchCat && fileFolderMap[f.id] == nil && !favoriteFileIDs.contains(f.id)
-                                   }
-                                   if !targets.isEmpty { selectedFileIDs = Set(targets.map { $0.id }); exportSelectedFiles() }
-                               }) { Label("書き出し", systemImage: "square.and.arrow.up") }
-                           }
-                
+                .contextMenu {
+                    Button(action: {
+                        let targets = secretFiles.filter { f in
+                            let matchCat = categoryMatches(f, folder: selectedFolder)
+                            return matchCat && fileFolderMap[f.id] == nil && !favoriteFileIDs.contains(f.id)
+                        }
+                        preDecryptFiles(targets)
+                    }) { Label("フォルダ内のファイルを全て解読", systemImage: "lock.open.fill") }
+
+                    Button(action: {
+                        let targets = secretFiles.filter { f in
+                            let matchCat = categoryMatches(f, folder: selectedFolder)
+                            return matchCat && fileFolderMap[f.id] == nil && !favoriteFileIDs.contains(f.id)
+                        }
+                        if !targets.isEmpty {
+                            selectedFileIDs = Set(targets.map { $0.id })
+                            exportSelectedFiles()
+                        }
+                    }) { Label("書き出し", systemImage: "square.and.arrow.up") }
+                }
+
                 FolderChip(title: "お気に入り", icon: "heart.fill", customTint: .pink,
                            isSelected: showingFavoritesOnly) {
                     selectedAppFolderID = nil; showingFavoritesOnly = true
                 }
-                           .contextMenu {
-                               Button(action: {
-                                   let targets = secretFiles.filter { f in
-                                       categoryMatches(f, folder: selectedFolder) && favoriteFileIDs.contains(f.id)
-                                   }
-                                   preDecryptFiles(targets)
-                               }) { Label("フォルダ内のファイルを全て解読", systemImage: "lock.open.fill") }
-                               Button(action: {
-                                   let targets = secretFiles.filter { f in
-                                       categoryMatches(f, folder: selectedFolder) && favoriteFileIDs.contains(f.id)
-                                   }
-                                   if !targets.isEmpty { selectedFileIDs = Set(targets.map { $0.id }); exportSelectedFiles() }
-                               }) { Label("書き出し", systemImage: "square.and.arrow.up") }
-                           }
-                
+                .contextMenu {
+                    Button(action: {
+                        let targets = secretFiles.filter { f in
+                            categoryMatches(f, folder: selectedFolder) && favoriteFileIDs.contains(f.id)
+                        }
+                        preDecryptFiles(targets)
+                    }) { Label("フォルダ内のファイルを全て解読", systemImage: "lock.open.fill") }
+
+                    Button(action: {
+                        let targets = secretFiles.filter { f in
+                            categoryMatches(f, folder: selectedFolder) && favoriteFileIDs.contains(f.id)
+                        }
+                        if !targets.isEmpty {
+                            selectedFileIDs = Set(targets.map { $0.id })
+                            exportSelectedFiles()
+                        }
+                    }) { Label("書き出し", systemImage: "square.and.arrow.up") }
+                }
+
                 ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
                     FolderChip(title: folder.name, icon: "folder.fill", customTint: .blue,
                                isSelected: selectedAppFolderID == folder.id && !showingFavoritesOnly) {
                         selectedAppFolderID = folder.id; showingFavoritesOnly = false
                     }
-                               .contextMenu {
-                                   Button(action: {
-                                       let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
-                                       preDecryptFiles(targets)
-                                   }) { Label("フォルダ内のファイルを全て解読", systemImage: "lock.open.fill") }
-                                   Button(action: {
-                                       let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
-                                       if !targets.isEmpty { selectedFileIDs = Set(targets.map { $0.id }); exportSelectedFiles() }
-                                   }) { Label("書き出し", systemImage: "square.and.arrow.up") }
-                                   Button {
-                                       editingFolder = folder
-                                       editingFolderName = folder.name
-                                       folderAlertMode = .rename
-                                       showingFolderAlert = true
-                                   } label: { Label("名前を変更", systemImage: "pencil") }
-                                   Button(role: .destructive) { deleteFolder(folder) } label: {
-                                       Label("削除", systemImage: "trash")
-                                   }
-                               }
+                    .contextMenu {
+                        Button(action: {
+                            let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
+                            preDecryptFiles(targets)
+                        }) { Label("フォルダ内のファイルを全て解読", systemImage: "lock.open.fill") }
+
+                        Button(action: {
+                            let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
+                            if !targets.isEmpty {
+                                selectedFileIDs = Set(targets.map { $0.id })
+                                exportSelectedFiles()
+                            }
+                        }) { Label("書き出し", systemImage: "square.and.arrow.up") }
+
+                        Button {
+                            editingFolder = folder
+                            editingFolderName = folder.name
+                            folderAlertMode = .rename
+                            showingFolderAlert = true
+                        } label: {
+                            Label("名前を変更", systemImage: "pencil")
+                        }
+
+                        Button(role: .destructive) { deleteFolder(folder) } label: {
+                            Label("削除", systemImage: "trash")
+                        }
+                    }
                 }
-                
-                Button(action: { editingFolderName = ""; folderAlertMode = .create; showingFolderAlert = true }) {
-                    Image(systemName: "plus.circle.fill").font(.title2).foregroundColor(.blue)
+
+                Button(action: {
+                    editingFolderName = ""
+                    folderAlertMode = .create
+                    showingFolderAlert = true
+                }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.blue)
                 }
             }
             .padding(.horizontal)
         }
         .padding(.bottom, 10)
     }
-    
+
     private var iPhoneSelectionBar: some View {
         VStack(spacing: 0) {
             Divider()
@@ -273,7 +300,7 @@ extension ContentView {
                         .frame(maxWidth: .infinity)
                     }
                     .disabled(selectedFileIDs.isEmpty)
-                    
+
                     Button(action: { showingMoveDialog = true }) {
                         VStack(spacing: 4) {
                             Image(systemName: "folder").font(.title2)
@@ -283,7 +310,7 @@ extension ContentView {
                     }
                     .foregroundColor(selectedFileIDs.isEmpty ? .gray : .blue)
                     .disabled(selectedFileIDs.isEmpty)
-                    
+
                     Button(action: { showingMultiDeleteConfirm = true }) {
                         VStack(spacing: 4) {
                             Image(systemName: "trash").font(.title2)
@@ -300,17 +327,17 @@ extension ContentView {
             .transition(.move(edge: .bottom))
         }
     }
-    
+
     // MARK: - ファイルグリッド
-    
+
     @ViewBuilder
     func fileGrid(for folderIndex: Int) -> some View {
         let filtered = currentFilteredFiles(for: folderIndex)
-        
+
         if filtered.isEmpty {
             let emptyMsg = showingFavoritesOnly
-            ? "お気に入りがありません"
-            : (selectedAppFolderID == nil ? "未分類のファイルがありません" : "このフォルダは空です")
+                ? "お気に入りがありません"
+                : (selectedAppFolderID == nil ? "未分類のファイルがありません" : "このフォルダは空です")
             VStack {
                 Spacer()
                 Text(String(localized: String.LocalizationValue(emptyMsg))).foregroundColor(.gray)
@@ -323,30 +350,39 @@ extension ContentView {
                         ZStack(alignment: .bottomTrailing) {
                             FileThumbnailView(file: file) {
                                 if isSelectionMode {
-                                    if selectedFileIDs.contains(file.id) { selectedFileIDs.remove(file.id) }
-                                    else { selectedFileIDs.insert(file.id) }
-                                } else {
-                                    if let idx = filtered.firstIndex(where: { $0.id == file.id }) {
-                                        galleryIndex = idx; showingGallery = true
+                                    if selectedFileIDs.contains(file.id) {
+                                        selectedFileIDs.remove(file.id)
+                                    } else {
+                                        selectedFileIDs.insert(file.id)
                                     }
+                                } else if let idx = filtered.firstIndex(where: { $0.id == file.id }) {
+                                    galleryIndex = idx
+                                    showingGallery = true
                                 }
                             }
                             .contextMenu {
                                 if !isSelectionMode {
-                                    Button(action: { selectedFileIDs = [file.id]; exportSelectedFiles() }) {
+                                    Button(action: {
+                                        selectedFileIDs = [file.id]
+                                        exportSelectedFiles()
+                                    }) {
                                         Label("書き出し", systemImage: "square.and.arrow.up")
                                     }
-                                    Button(action: { selectedFileIDs = [file.id]; showingMoveDialog = true }) {
+                                    Button(action: {
+                                        selectedFileIDs = [file.id]
+                                        showingMoveDialog = true
+                                    }) {
                                         Label("移動", systemImage: "folder")
                                     }
                                     Button(role: .destructive, action: {
-                                        selectedFileIDs = [file.id]; showingMultiDeleteConfirm = true
+                                        selectedFileIDs = [file.id]
+                                        showingMultiDeleteConfirm = true
                                     }) {
                                         Label("削除", systemImage: "trash")
                                     }
                                 }
                             }
-                            
+
                             if isSelectionMode {
                                 Image(systemName: selectedFileIDs.contains(file.id) ? "checkmark.circle.fill" : "circle")
                                     .font(.title2)
@@ -360,8 +396,11 @@ extension ContentView {
                             if !isSelectionMode {
                                 Button(action: {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
-                                        if favoriteFileIDs.contains(file.id) { favoriteFileIDs.remove(file.id) }
-                                        else { favoriteFileIDs.insert(file.id) }
+                                        if favoriteFileIDs.contains(file.id) {
+                                            favoriteFileIDs.remove(file.id)
+                                        } else {
+                                            favoriteFileIDs.insert(file.id)
+                                        }
                                         saveFolders()
                                     }
                                 }) {
@@ -384,9 +423,9 @@ extension ContentView {
             }
         }
     }
-    
+
     // MARK: - ナビゲーションツールバー
-    
+
     @ToolbarContentBuilder
     var toolbarContent: some ToolbarContent {
         if isUnlocked {
@@ -403,23 +442,34 @@ extension ContentView {
                         let currentFiles = currentFilteredFiles(for: selectedFolder)
                         Text(selectedFileIDs.count == currentFiles.count && !currentFiles.isEmpty
                              ? "すべて選択解除" : "すべて選択")
-                        .font(.body)
+                            .font(.body)
                     }
                 }
             }
+
             ToolbarItem(placement: .navigationBarTrailing) {
                 if isSelectionMode {
                     Button(action: {
-                        withAnimation { isSelectionMode = false; selectedFileIDs.removeAll() }
+                        withAnimation {
+                            isSelectionMode = false
+                            selectedFileIDs.removeAll()
+                        }
                     }) {
-                        Image(systemName: "xmark").font(.title3).fontWeight(.bold)
+                        Image(systemName: "xmark")
+                            .font(.title3)
+                            .fontWeight(.bold)
                     }
                 } else {
                     Menu {
                         if selectedMainTab == 1 {
                             Button(action: {
-                                withAnimation { isSelectionMode = true; selectedFileIDs.removeAll() }
-                            }) { Label("選択", systemImage: "checkmark.circle") }
+                                withAnimation {
+                                    isSelectionMode = true
+                                    selectedFileIDs.removeAll()
+                                }
+                            }) {
+                                Label("選択", systemImage: "checkmark.circle")
+                            }
                             Button(action: {
                                 preDecryptFiles(currentFilteredFiles(for: selectedFolder))
                             }) {
@@ -432,6 +482,7 @@ extension ContentView {
                             .disabled(currentFilteredFiles(for: selectedFolder).isEmpty)
                             Divider()
                         }
+
                         Button(action: { showingTimerSetup = true }) {
                             Label("自爆タイマー", systemImage: "timer")
                         }
@@ -439,15 +490,16 @@ extension ContentView {
                             Label("システムを初期化", systemImage: "trash")
                         }
                     } label: {
-                        Image(systemName: "ellipsis.circle").font(.title3)
+                        Image(systemName: "ellipsis.circle")
+                            .font(.title3)
                     }
                 }
             }
         }
     }
-    
+
     // MARK: - ヘルパー
-    
+
     private func categoryMatches(_ f: SecretFile, folder: Int) -> Bool {
         switch folder {
         case 0: return f.isImage
@@ -457,3 +509,13 @@ extension ContentView {
         }
     }
 }
+
+#else
+
+extension ContentView {
+    var iPhoneBody: some View {
+        EmptyView()
+    }
+}
+
+#endif

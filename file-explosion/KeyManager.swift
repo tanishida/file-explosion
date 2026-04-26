@@ -14,7 +14,11 @@ class KeyManager {
         let newKey = SymmetricKey(size: .bits256)
         let keyData = newKey.withUnsafeBytes { Data(Array($0)) }
         let query: [String: Any] = [
-            kSecClass as String: kSecClassKey, kSecAttrApplicationTag as String: keyTag, kSecValueData as String: keyData
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyTag,
+            kSecValueData as String: keyData,
+            // デバイス固有・バックアップ対象外・ロック中アクセス不可
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
         SecItemAdd(query as CFDictionary, nil)
     }
@@ -25,13 +29,23 @@ class KeyManager {
     }
     
     static func hasKey() -> Bool {
-        let query: [String: Any] = [kSecClass as String: kSecClassKey, kSecAttrApplicationTag as String: keyTag, kSecReturnData as String: true]
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyTag,
+            kSecReturnData as String: false,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        ]
         var item: CFTypeRef?
         return SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess
     }
     
     private static func getKey() -> SymmetricKey? {
-        let query: [String: Any] = [kSecClass as String: kSecClassKey, kSecAttrApplicationTag as String: keyTag, kSecReturnData as String: true]
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyTag,
+            kSecReturnData as String: true,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        ]
         var item: CFTypeRef?
         if SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess, let keyData = item as? Data {
             return SymmetricKey(data: keyData)

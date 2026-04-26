@@ -1,14 +1,84 @@
 import SwiftUI
 import PhotosUI
+#if canImport(AppKit)
+import AppKit
+#endif
 
 // MARK: - Mac / iPad Body
 extension ContentView {
+    
+    var macLockScreenView: some View {
+        VStack(spacing: 30) {
+            Spacer()
+            Image(systemName: showPasscodeEntry ? "lock.shield.fill" : "touchid")
+                .font(.system(size: 60))
+                .foregroundColor(showPasscodeEntry ? .orange : .blue)
+            
+            if showPasscodeEntry {
+                VStack(spacing: 20) {
+                    Text("パスコードを入力")
+                        .font(.headline)
+                    
+                    PasscodeField(title: "4桁の数字", text: $inputPasscode)
+                    
+                    Button(action: {
+                        if inputPasscode == appPasscode {
+                            unlockSystem()
+                        } else {
+                            statusMessage = "❌ パスコード不一致"
+                            inputPasscode = ""
+                        }
+                    }) {
+                        Text("解除する")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(width: 200)
+                            .background(Color.orange)
+                            .cornerRadius(10)
+                    }
+                    .disabled(inputPasscode.count < 4)
+                    
+                    Button("生体認証に戻る") {
+                        showPasscodeEntry = false
+                    }
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                }
+            } else {
+                Button(action: { authenticate() }) {
+                    HStack {
+                        Image(systemName: "touchid")
+                        Text("生体認証でロック解除")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(width: 260)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+                }
+                
+                Button("パスコードを使う") {
+                    showPasscodeEntry = true
+                }
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .underline()
+            }
+            
+            Spacer()
+        }
+    }
     
     /// Mac・iPad専用のルートビュー（Finderライクレイアウト）。
     /// ここを修正してもiPhone側（ContentView+iPhone.swift）には影響しない。
     var finderBody: some View {
         Group {
-            if !isUnlocked {
+            if isDestroyed {
+                destroyedView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if !isUnlocked {
                 VStack(spacing: 0) {
                     if lastAccessDate != 0 {
                         VStack(spacing: 4) {
@@ -22,7 +92,7 @@ extension ContentView {
                         .background(Color.red.opacity(0.06))
                         Divider()
                     }
-                    lockScreenView
+                    macLockScreenView
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -142,32 +212,138 @@ extension ContentView {
                         ) { showingResetConfirmation = true }
                     }
                 }
+                
+                // D&D アップロードゾーン
+                macDropZone
             }
             .padding(28)
         }
-        .navigationTitle("LimitBox")
     }
     
-    private func macStatCard(icon: String, color: Color, label: String, count: Int, categoryIndex: Int) -> some View {
-        Button {
-            selectedFolder = categoryIndex
-            folderSelection = .unclassified
-            selectedAppFolderID = nil
-            showingFavoritesOnly = false
-            macShowHome = false
-        } label: {
-            VStack(spacing: 8) {
-                Image(systemName: icon).font(.title2).foregroundColor(color)
-                Text("\(count)").font(.title).bold()
-                Text(label).font(.caption).foregroundColor(.secondary)
+    // MARK: - D&D ドロップゾーン
+    
+    private var macDropZone: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(
+                    isDropTargetedHome ? Color.accentColor : Color.secondary.opacity(0.4),
+                    style: StrokeStyle(lineWidth: 2, dash: [8])
+                )
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isDropTargetedHome ? Color.accentColor.opacity(0.08) : Color.secondary.opacity(0.04))
+                )
+                .frame(height: 180)
+            
+            VStack(spacing: 12) {
+                Image(systemName: isDropTargetedHome ? "arrow.down.doc.fill" : "arrow.down.doc")
+                    .font(.system(size: 40))
+                    .foregroundColor(isDropTargetedHome ? .accentColor : .secondary)
+                Text(isDropTargetedHome ? "ドロップしてアップロード" : "ここにファイルをドロップしてアップロード")
+                    .font(.headline)
+                    .foregroundColor(isDropTargetedHome ? .accentColor : .secondary)
+                Text("画像・動画・PDF・その他のファイルに対応")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(Color.secondary.opacity(0.07))
-            .cornerRadius(12)
-            .contentShape(RoundedRectangle(cornerRadius: 12))
         }
-        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.15), value: isDropTargetedHome)
+        .onDrop(of: [.fileURL, .data], isTargeted: $isDropTargetedHome) { providers in
+            handleFileDrop(providers: providers)
+        }
+    }
+    
+    /// ドロップされたファイルを暗号化してインポートする
+    func handleFileDrop(providers: [NSItemProvider]) -> Bool {
+        guard !providers.isEmpty else { return false }
+        isProcessing = true
+        processingMessage = "極秘処理中..."
+        
+        let group = DispatchGroup()
+        var tempURLs: [URL] = []
+        
+        for provider in providers {
+            // まず fileURL として試みる
+            if provider.hasItemConformingToTypeIdentifier("public.file-url") {
+                group.enter()
+                provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, _ in
+                    defer { group.leave() }
+                    var resolved: URL?
+                    if let data = item as? Data {
+                        var stale = false
+                        resolved = try? URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale)
+                        if resolved == nil { resolved = URL(dataRepresentation: data, relativeTo: nil) }
+                    } else if let url = item as? URL {
+                        resolved = url
+                    }
+                    guard let src = resolved else { return }
+                    // ファイルのコピーを tmp に作成してアクセス権を確保
+                    let dst = FileManager.default.temporaryDirectory
+                        .appendingPathComponent(UUID().uuidString + "_" + src.lastPathComponent)
+                    let accessing = src.startAccessingSecurityScopedResource()
+                    defer { if accessing { src.stopAccessingSecurityScopedResource() } }
+                    if (try? FileManager.default.copyItem(at: src, to: dst)) != nil {
+                        tempURLs.append(dst)
+                    }
+                }
+            } else if provider.hasItemConformingToTypeIdentifier("public.data") {
+                // ファイル表現としてロードし tmp にコピー
+                group.enter()
+                provider.loadFileRepresentation(forTypeIdentifier: "public.data") { url, _ in
+                    defer { group.leave() }
+                    guard let src = url else { return }
+                    let dst = FileManager.default.temporaryDirectory
+                        .appendingPathComponent(UUID().uuidString + "_" + src.lastPathComponent)
+                    if (try? FileManager.default.copyItem(at: src, to: dst)) != nil {
+                        tempURLs.append(dst)
+                    }
+                }
+            }
+        }
+        
+        group.notify(queue: .main) {
+            guard !tempURLs.isEmpty else { self.isProcessing = false; return }
+            DispatchQueue.global(qos: .userInitiated).async {
+                for (index, url) in tempURLs.enumerated() {
+                    DispatchQueue.main.async {
+                        self.processingMessage = "極秘処理中... (\(index + 1)/\(tempURLs.count))"
+                    }
+                    autoreleasepool {
+                        KeyManager.createAndSaveKey()
+                        _ = KeyManager.encryptFile(
+                            inputURL: url,
+                            outputURL: FileManagerHelper.generateNewFileURL(
+                                originalExtension: url.pathExtension.isEmpty ? "data" : url.pathExtension
+                            )
+                        )
+                        try? FileManager.default.removeItem(at: url)
+                    }
+                }
+                DispatchQueue.main.async { self.refreshFiles(); self.isProcessing = false }
+            }
+        }
+        return true
+    }
+    
+    private func macStatCard(icon: String, color: Color, label: String, count: Int, categoryIndex: Int) -> some View {        Button {
+        selectedFolder = categoryIndex
+        folderSelection = .unclassified
+        selectedAppFolderID = nil
+        showingFavoritesOnly = false
+        macShowHome = false
+    } label: {
+        VStack(spacing: 8) {
+            Image(systemName: icon).font(.title2).foregroundColor(color)
+            Text("\(count)").font(.title).bold()
+            Text(label).font(.caption).foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(Color.secondary.opacity(0.07))
+        .cornerRadius(12)
+        .contentShape(RoundedRectangle(cornerRadius: 12))
+    }
+    .buttonStyle(.plain)
     }
     
     private func macActionButton(label: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
@@ -196,96 +372,141 @@ extension ContentView {
     private var finderSidebar: some View {
         List {
             Section {
-                Label("ホーム", systemImage: "house.fill")
-                    .contentShape(Rectangle())
-                    .listRowBackground(macShowHome ? Color.accentColor.opacity(0.25) : Color.clear)
-                    .onTapGesture { macShowHome = true }
+                Button { macShowHome = true } label: {
+                    HStack { Label("ホーム", systemImage: "house.fill"); Spacer() }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(macShowHome ? Color.accentColor.opacity(0.25) : Color.clear)
+                .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
             }
             
             Section("カテゴリ") {
                 ForEach(0..<4, id: \.self) { i in
-                    Label(
-                        ["写真", "動画", "PDF", "その他"][i],
-                        systemImage: ["photo.fill", "play.rectangle.fill", "doc.richtext.fill", "doc.fill"][i]
-                    )
-                    .contentShape(Rectangle())
-                    .listRowBackground((!macShowHome && selectedFolder == i) ? Color.accentColor.opacity(0.25) : Color.clear)
-                    .onTapGesture {
-                        selectedFolder = i
-                        folderSelection = .unclassified
-                        macShowHome = false
+                    Button {
+                        selectedFolder = i; folderSelection = .unclassified; macShowHome = false
+                    } label: {
+                        HStack {
+                            Label(
+                                ["写真", "動画", "PDF", "その他"][i],
+                                systemImage: ["photo.fill", "play.rectangle.fill", "doc.richtext.fill", "doc.fill"][i]
+                            )
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .listRowBackground((!macShowHome && selectedFolder == i) ? Color.accentColor.opacity(0.25) : Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                 }
             }
             
             if !macShowHome {
                 Section("フォルダ") {
-                    Label("未分類", systemImage: "tray.2.fill")
-                        .contentShape(Rectangle())
-                        .listRowBackground((!macShowHome && folderSelection == .unclassified) ? Color.accentColor.opacity(0.25) : Color.clear)
-                        .onTapGesture { folderSelection = .unclassified }
-                        .contextMenu {
-                            Button {
-                                let targets = secretFiles.filter { f in
-                                    let matchCat: Bool
-                                    switch selectedFolder {
-                                    case 0: matchCat = f.isImage
-                                    case 1: matchCat = f.isVideo
-                                    case 2: matchCat = f.isPDF
-                                    default: matchCat = !f.isImage && !f.isVideo && !f.isPDF
-                                    }
-                                    return matchCat && fileFolderMap[f.id] == nil && !favoriteFileIDs.contains(f.id)
-                                }
-                                preDecryptFiles(targets)
-                            } label: { Label("解読", systemImage: "lock.open.fill") }
-                        }
-                    
-                    Label("お気に入り", systemImage: "heart.fill")
-                        .foregroundColor(.pink)
-                        .contentShape(Rectangle())
-                        .listRowBackground((!macShowHome && folderSelection == .favorites) ? Color.accentColor.opacity(0.25) : Color.clear)
-                        .onTapGesture { folderSelection = .favorites }
-                        .contextMenu {
-                            Button {
-                                let targets = secretFiles.filter { f in
-                                    favoriteFileIDs.contains(f.id)
-                                }
-                                preDecryptFiles(targets)
-                            } label: { Label("解読", systemImage: "lock.open.fill") }
-                        }
-                    
-                    ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
-                        Label(folder.name, systemImage: "folder.fill")
+                    Button { folderSelection = .unclassified } label: {
+                        HStack { Label("未分類", systemImage: "tray.2.fill"); Spacer() }
                             .contentShape(Rectangle())
-                            .listRowBackground((!macShowHome && folderSelection == .folder(folder.id)) ? Color.accentColor.opacity(0.25) : Color.clear)
-                            .onTapGesture { folderSelection = .folder(folder.id) }
+                    }
+                    .buttonStyle(.plain)
+                    .listRowBackground(
+                        ((!macShowHome && folderSelection == .unclassified) || sidebarDropTarget == .unclassified)
+                        ? Color.accentColor.opacity(sidebarDropTarget == .unclassified ? 0.35 : 0.25)
+                        : Color.clear
+                    )
+                    .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
+                    .onDrop(of: ["public.plain-text"],
+                            isTargeted: Binding(
+                                get: { sidebarDropTarget == .unclassified },
+                                set: { sidebarDropTarget = $0 ? .unclassified : nil }
+                            )) { providers in
+                                moveDroppedFiles(providers: providers, to: nil)
+                            }
                             .contextMenu {
                                 Button {
-                                    let targets = secretFiles.filter { fileFolderMap[$0.id] == folder.id }
+                                    let targets = secretFiles.filter { f in
+                                        let matchCat: Bool
+                                        switch selectedFolder {
+                                        case 0: matchCat = f.isImage
+                                        case 1: matchCat = f.isVideo
+                                        case 2: matchCat = f.isPDF
+                                        default: matchCat = !f.isImage && !f.isVideo && !f.isPDF
+                                        }
+                                        return matchCat && fileFolderMap[f.id] == nil && !favoriteFileIDs.contains(f.id)
+                                    }
                                     preDecryptFiles(targets)
                                 } label: { Label("解読", systemImage: "lock.open.fill") }
-                                Button {
-                                    editingFolder = folder
-                                    editingFolderName = folder.name
-                                    folderAlertMode = .rename
-                                    showingFolderAlert = true
-                                } label: { Label("名前を変更", systemImage: "pencil") }
-                                Button(role: .destructive) { deleteFolder(folder) } label: {
-                                    Label("削除", systemImage: "trash")
-                                }
                             }
+                    
+                    Button { folderSelection = .favorites } label: {
+                        HStack {
+                            Label("お気に入り", systemImage: "heart.fill").foregroundColor(.pink)
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .listRowBackground(
+                        ((!macShowHome && folderSelection == .favorites) || sidebarDropTarget == .favorites)
+                        ? Color.accentColor.opacity(sidebarDropTarget == .favorites ? 0.35 : 0.25)
+                        : Color.clear
+                    )
+                    .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
+                    .onDrop(of: ["public.plain-text"],
+                            isTargeted: Binding(
+                                get: { sidebarDropTarget == .favorites },
+                                set: { sidebarDropTarget = $0 ? .favorites : nil }
+                            )) { providers in
+                                addDroppedFilesToFavorites(providers: providers)
+                            }
+                            .contextMenu {
+                                Button {
+                                    preDecryptFiles(secretFiles.filter { favoriteFileIDs.contains($0.id) })
+                                } label: { Label("解読", systemImage: "lock.open.fill") }
+                            }
+                    
+                    ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
+                        Button { folderSelection = .folder(folder.id) } label: {
+                            HStack { Label(folder.name, systemImage: "folder.fill"); Spacer() }
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .listRowBackground(
+                            ((!macShowHome && folderSelection == .folder(folder.id)) || sidebarDropTarget == .folder(folder.id))
+                            ? Color.accentColor.opacity(sidebarDropTarget == .folder(folder.id) ? 0.35 : 0.25)
+                            : Color.clear
+                        )
+                        .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
+                        .onDrop(of: ["public.plain-text"],
+                                isTargeted: Binding(
+                                    get: { sidebarDropTarget == .folder(folder.id) },
+                                    set: { sidebarDropTarget = $0 ? .folder(folder.id) : nil }
+                                )) { providers in
+                                    moveDroppedFiles(providers: providers, to: folder.id)
+                                }
+                                .contextMenu {
+                                    Button {
+                                        preDecryptFiles(secretFiles.filter { fileFolderMap[$0.id] == folder.id })
+                                    } label: { Label("解読", systemImage: "lock.open.fill") }
+                                    Button {
+                                        editingFolder = folder; editingFolderName = folder.name
+                                        folderAlertMode = .rename; showingFolderAlert = true
+                                    } label: { Label("名前を変更", systemImage: "pencil") }
+                                    Button(role: .destructive) { deleteFolder(folder) } label: {
+                                        Label("削除", systemImage: "trash")
+                                    }
+                                }
                     }
                 }
-            } // if !macShowHome
+            }
         }
         .listStyle(.sidebar)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button {
-                    editingFolderName = ""
-                    folderAlertMode = .create
-                    showingFolderAlert = true
-                } label: { Label("フォルダを追加", systemImage: "folder.badge.plus") }
+                if !macShowHome {
+                    Button {
+                        editingFolderName = ""; folderAlertMode = .create; showingFolderAlert = true
+                    } label: { Label("フォルダを追加", systemImage: "folder.badge.plus") }
+                }
             }
         }
     }
@@ -294,22 +515,18 @@ extension ContentView {
     
     @ViewBuilder
     var finderDetailView: some View {
-        if isDestroyed {
-            destroyedView
-        } else {
-            VStack(spacing: 0) {
-                finderToolbar
-                if filteredFiles.isEmpty {
-                    finderEmptyView
+        VStack(spacing: 0) {
+            finderToolbar
+            if filteredFiles.isEmpty {
+                finderEmptyView
+            } else {
+                if viewMode == .grid {
+                    finderGridView
                 } else {
-                    if viewMode == .grid {
-                        finderGridView
-                    } else {
-                        finderListView
-                    }
+                    finderListView
                 }
-                finderStatusBar
             }
+            finderStatusBar
         }
     }
     
@@ -416,70 +633,170 @@ extension ContentView {
     
     // MARK: - グリッドビュー
     
-    var finderGridView: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 8)], spacing: 16) {
-                ForEach(filteredFiles) { file in
-                    MacGridItem(
-                        file: file,
-                        isSelected: selectedFileIDs.contains(file.id),
-                        isFavorite: favoriteFileIDs.contains(file.id),
-                        onTap: {
-                            if selectedFileIDs.contains(file.id) { selectedFileIDs.remove(file.id) }
-                            else { selectedFileIDs.insert(file.id) }
-                        },
-                        onOpen: {
-                            if let idx = filteredFiles.firstIndex(where: { $0.id == file.id }) {
-                                galleryIndex = idx; showingGallery = true
-                            }
-                        },
-                        contextMenu: AnyView(macContextMenu(for: file))
-                    )
+    private var gridDragGesture: some Gesture {
+        DragGesture(minimumDistance: 5, coordinateSpace: .named("GridSpace"))
+            .onChanged { value in
+                if dragStartPos == nil { dragStartPos = value.startLocation }
+                dragCurrentPos = value.location
+                let rect = CGRect(
+                    x: min(value.startLocation.x, value.location.x),
+                    y: min(value.startLocation.y, value.location.y),
+                    width: abs(value.location.x - value.startLocation.x),
+                    height: abs(value.location.y - value.startLocation.y)
+                )
+                var newlySelected: Set<UUID> = []
+                for (id, frame) in gridItemFrames {
+                    if rect.intersects(frame) { newlySelected.insert(id) }
                 }
+                selectedFileIDs = newlySelected
             }
-            .padding(16)
+            .onEnded { _ in
+                dragStartPos = nil
+                dragCurrentPos = nil
+            }
+    }
+    
+    private var gridItemsView: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 8)], spacing: 16) {
+            ForEach(filteredFiles) { file in
+                MacGridItem(
+                    file: file,
+                    isSelected: selectedFileIDs.contains(file.id),
+                    isFavorite: favoriteFileIDs.contains(file.id),
+                    onTap: {
+                        if selectedFileIDs.contains(file.id) { selectedFileIDs.remove(file.id) }
+                        else { selectedFileIDs.insert(file.id) }
+                    },
+                    onOpen: {
+                        if let idx = filteredFiles.firstIndex(where: { $0.id == file.id }) {
+                            galleryIndex = idx; showingGallery = true
+                        }
+                    },
+                    contextMenu: AnyView(macContextMenu(for: file))
+                )
+                .onDrag {
+                    let ids = selectedFileIDs.contains(file.id) && !selectedFileIDs.isEmpty
+                    ? selectedFileIDs : [file.id]
+                    let str = ids.map { $0.uuidString }.joined(separator: ",")
+                    return NSItemProvider(object: str as NSString)
+                }
+                .background(GeometryReader { geo in
+                    Color.clear.preference(key: ItemFramePreferenceKey.self,
+                                           value: [file.id: geo.frame(in: .named("GridSpace"))])
+                })
+            }
         }
-        .background(Color(uiColor: .secondarySystemBackground))
+        .padding(16)
+        .padding(.bottom, 60)
+        .onPreferenceChange(ItemFramePreferenceKey.self) { frames in
+            gridItemFrames = frames
+        }
+    }
+    
+    var finderGridView: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                ZStack(alignment: .topLeading) {
+                    Color.white.opacity(0.001)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .onTapGesture { selectedFileIDs.removeAll() }
+                        .gesture(gridDragGesture)
+                    
+                    gridItemsView
+                    
+                    if let start = dragStartPos, let current = dragCurrentPos {
+                        let rect = CGRect(
+                            x: min(start.x, current.x),
+                            y: min(start.y, current.y),
+                            width: abs(current.x - start.x),
+                            height: abs(current.y - start.y)
+                        )
+                        Rectangle()
+                            .fill(Color.accentColor.opacity(0.2))
+                            .border(Color.accentColor, width: 1)
+                            .frame(width: rect.width, height: rect.height)
+                            .offset(x: rect.minX, y: rect.minY)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .coordinateSpace(name: "GridSpace")
+            }
+            .background(
+                Color.secondary.opacity(0.05)
+                    .onTapGesture { selectedFileIDs.removeAll() }
+            )
+            
+            // D&D オーバーレイバー
+            fileAreaDropBar
+        }
+        .onDrop(of: [.fileURL, .data], isTargeted: $isDropTargetedFiles) { providers in
+            handleFileDrop(providers: providers)
+        }
     }
     
     // MARK: - リストビュー
     
     var finderListView: some View {
-        Table(filteredFiles, selection: $selectedFileIDs, sortOrder: $sortOrder) {
-            TableColumn("名前") { file in
-                HStack(spacing: 8) {
-                    Image(systemName: file.typeIcon)
-                        .foregroundColor(file.isImage ? .green : file.isVideo ? .blue : file.isPDF ? .red : .gray)
-                        .frame(width: 20)
-                    Text(file.displayName).lineLimit(1)
+        ZStack(alignment: .bottom) {
+            Table(filteredFiles, selection: $selectedFileIDs, sortOrder: $sortOrder) {
+                TableColumn("名前") { file in
+                    HStack(spacing: 8) {
+                        Image(systemName: file.typeIcon)
+                            .foregroundColor(file.isImage ? .green : file.isVideo ? .blue : file.isPDF ? .red : .gray)
+                            .frame(width: 20)
+                        Text(file.displayName).lineLimit(1)
+                    }
+                }
+                .width(min: 200, ideal: 300)
+                
+                TableColumn("種別", value: \.typeLabel) { file in
+                    Text(file.typeLabel).foregroundColor(.secondary)
+                }
+                .width(60)
+                
+                TableColumn("サイズ") { file in
+                    Text(file.fileSizeLabel).foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                .width(80)
+                
+                TableColumn("追加日", value: \.creationDate) { file in
+                    Text(file.creationDateLabel).foregroundColor(.secondary)
+                }
+                .width(min: 130, ideal: 160)
+            }
+            .contextMenu(forSelectionType: SecretFile.ID.self) { items in
+                if let first = items.first, let file = secretFiles.first(where: { $0.id == first }) {
+                    macContextMenu(for: file)
                 }
             }
-            .width(min: 200, ideal: 300)
+            .onChange(of: sortOrder) { newOrder, _ in
+                // ソート実装は今後追加予定
+            }
             
-            TableColumn("種別", value: \.typeLabel) { file in
-                Text(file.typeLabel).foregroundColor(.secondary)
-            }
-            .width(60)
-            
-            TableColumn("サイズ") { file in
-                Text(file.fileSizeLabel).foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-            .width(80)
-            
-            TableColumn("追加日", value: \.creationDate) { file in
-                Text(file.creationDateLabel).foregroundColor(.secondary)
-            }
-            .width(min: 130, ideal: 160)
+            // D&D オーバーレイバー
+            fileAreaDropBar
         }
-        .contextMenu(forSelectionType: SecretFile.ID.self) { items in
-            if let first = items.first, let file = secretFiles.first(where: { $0.id == first }) {
-                macContextMenu(for: file)
-            }
+        .onDrop(of: [.fileURL, .data], isTargeted: $isDropTargetedFiles) { providers in
+            handleFileDrop(providers: providers)
         }
-        .onChange(of: sortOrder) { newOrder, _ in
-            // ソート実装は今後追加予定
+    }
+    
+    /// グリッド・リスト共通の下部 D&D バー
+    private var fileAreaDropBar: some View {
+        VStack(spacing: 6) {
+            Image(systemName: isDropTargetedFiles ? "arrow.down.doc.fill" : "arrow.down.doc")
+                .font(.title3)
+                .foregroundColor(isDropTargetedFiles ? .accentColor : .secondary)
+            Text(isDropTargetedFiles ? "ドロップしてアップロード" : "ここにファイルをドロップ")
+                .font(.subheadline)
+                .foregroundColor(isDropTargetedFiles ? .accentColor : .secondary)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(isDropTargetedFiles ? Color.accentColor.opacity(0.06) : Color.secondary.opacity(0.08))
+        .overlay(alignment: .top) { Divider() }
+        .animation(.easeInOut(duration: 0.15), value: isDropTargetedFiles)
     }
     
     // MARK: - ステータスバー
@@ -505,15 +822,22 @@ extension ContentView {
     // MARK: - 空ビュー
     
     var finderEmptyView: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            Image(systemName: searchText.isEmpty ? "tray" : "magnifyingglass")
-                .font(.system(size: 48)).foregroundColor(.secondary)
-            Text(searchText.isEmpty
-                 ? (showingFavoritesOnly ? "お気に入りがありません" : "ファイルがありません")
-                 : "「\(searchText)」に一致するファイルがありません")
-            .foregroundColor(.secondary)
-            Spacer()
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 12) {
+                Spacer()
+                Image(systemName: searchText.isEmpty ? "tray" : "magnifyingglass")
+                    .font(.system(size: 48)).foregroundColor(.secondary)
+                Text(searchText.isEmpty
+                     ? (showingFavoritesOnly ? "お気に入りがありません" : "ファイルがありません")
+                     : "「\(searchText)」に一致するファイルがありません")
+                .foregroundColor(.secondary)
+                Spacer()
+            }
+            
+            fileAreaDropBar
+        }
+        .onDrop(of: [.fileURL, .data], isTargeted: $isDropTargetedFiles) { providers in
+            handleFileDrop(providers: providers)
         }
     }
     
@@ -529,6 +853,52 @@ extension ContentView {
     }
     
     // MARK: - コンテキストメニュー
+    
+    /// サイドバーのお気に入りへのファイルドロップ処理
+    func addDroppedFilesToFavorites(providers: [NSItemProvider]) -> Bool {
+        for provider in providers {
+            provider.loadItem(forTypeIdentifier: "public.plain-text", options: nil) { item, _ in
+                var str: String?
+                if let data = item as? Data { str = String(data: data, encoding: .utf8) }
+                else if let s = item as? String { str = s }
+                guard let ids = str?.split(separator: ",").compactMap({ UUID(uuidString: String($0)) }),
+                      !ids.isEmpty else { return }
+                DispatchQueue.main.async {
+                    for id in ids {
+                        self.favoriteFileIDs.insert(id)
+                    }
+                    self.saveFolders()
+                    self.selectedFileIDs.removeAll()
+                }
+            }
+        }
+        return true
+    }
+    
+    /// サイドバーへのファイルドロップ処理
+    func moveDroppedFiles(providers: [NSItemProvider], to folderID: UUID?) -> Bool {
+        for provider in providers {
+            provider.loadItem(forTypeIdentifier: "public.plain-text", options: nil) { item, _ in
+                var str: String?
+                if let data = item as? Data { str = String(data: data, encoding: .utf8) }
+                else if let s = item as? String { str = s }
+                guard let ids = str?.split(separator: ",").compactMap({ UUID(uuidString: String($0)) }),
+                      !ids.isEmpty else { return }
+                DispatchQueue.main.async {
+                    for id in ids {
+                        if let folderID = folderID {
+                            self.fileFolderMap[id] = folderID
+                        } else {
+                            self.fileFolderMap.removeValue(forKey: id)
+                        }
+                    }
+                    self.saveFolders()
+                    self.selectedFileIDs.removeAll()
+                }
+            }
+        }
+        return true
+    }
     
     @ViewBuilder
     func macContextMenu(for file: SecretFile) -> some View {
@@ -606,5 +976,12 @@ struct MacGridItem: View {
         }
         .contentShape(Rectangle())
         .contextMenu { contextMenu }
+    }
+}
+
+struct ItemFramePreferenceKey: PreferenceKey {
+    static var defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { $1 })
     }
 }

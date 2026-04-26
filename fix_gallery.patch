@@ -1,0 +1,44 @@
+--- file-explosion/GalleryViews.swift
++++ file-explosion/GalleryViews.swift
+@@ -535,16 +535,33 @@
+     }
+ }
+ 
+-struct TransparentBackground: UIViewRepresentable {
+-    func makeUIView(context: Context) -> UIView {
+-        let view = UIView();
+-        DispatchQueue.main.async { view.superview?.superview?.backgroundColor = .clear };
++struct TransparentBackground: PlatformViewRepresentable {
++#if os(macOS)
++    func makeNSView(context: Context) -> NSView {
++        let view = NSView()
++        DispatchQueue.main.async { view.superview?.superview?.layer?.backgroundColor = NSColor.clear.cgColor }
+         return view
+-    };
+-    func updateUIView(_ uiView: UIView, context: Context) {}
++    }
++    func updateNSView(_ nsView: NSView, context: Context) {}
++#else
++    func makeUIView(context: Context) -> UIView {
++        let view = UIView()
++        DispatchQueue.main.async { view.superview?.superview?.backgroundColor = .clear }
++        return view
++    }
++    func updateUIView(_ uiView: UIView, context: Context) {}
++#endif
+ }
+ 
+-
+-struct PDFKitView: UIViewRepresentable {
+-    let url: URL;
+-    func makeUIView(context: Context) -> PDFView {
+-        let v = PDFView();
+-        v.document = PDFDocument(url: url);
+-        v.autoScales = true;
+-        return v
+-    };
+-    func updateUIView(_ uiView: PDFView, context: Context) {}
+-    
+-    setupOrDecrypt()
+-}
+-}

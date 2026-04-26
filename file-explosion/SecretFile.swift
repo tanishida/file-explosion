@@ -1,7 +1,7 @@
 import Foundation
 import UniformTypeIdentifiers
 
-struct SecretFile: Identifiable, Equatable {
+struct SecretFile: Identifiable, Equatable, Sendable {
     let id: UUID
     let url: URL
     let isImage: Bool
