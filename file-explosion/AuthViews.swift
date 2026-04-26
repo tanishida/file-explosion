@@ -49,17 +49,45 @@ struct PasscodeField: View {
     var body: some View {
         ZStack(alignment: .trailing) {
             if isVisible {
-                TextField(title, text: $text).keyboardType(.numberPad).textFieldStyle(RoundedBorderTextFieldStyle()).multilineTextAlignment(.center)
+                visibleField
             } else {
-                SecureField(title, text: $text).keyboardType(.numberPad).textFieldStyle(RoundedBorderTextFieldStyle()).multilineTextAlignment(.center)
+                hiddenField
             }
             Button(action: { isVisible.toggle() }) {
                 Image(systemName: isVisible ? "eye.slash.fill" : "eye.fill").foregroundColor(.gray).padding(.trailing, 10)
             }
         }.frame(width: 180)
-            .onChange(of: text) { newValue in
+            .onChange(of: text) { _, newValue in
                 let numericString = newValue.filter { "0123456789".contains($0) }
                 if numericString.count > 4 { text = String(numericString.prefix(4)) } else if numericString != newValue { text = numericString }
             }
+    }
+    
+    @ViewBuilder
+    private var visibleField: some View {
+#if os(iOS)
+        TextField(title, text: $text)
+            .keyboardType(.numberPad)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .multilineTextAlignment(.center)
+#else
+        TextField(title, text: $text)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .multilineTextAlignment(.center)
+#endif
+    }
+    
+    @ViewBuilder
+    private var hiddenField: some View {
+#if os(iOS)
+        SecureField(title, text: $text)
+            .keyboardType(.numberPad)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .multilineTextAlignment(.center)
+#else
+        SecureField(title, text: $text)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .multilineTextAlignment(.center)
+#endif
     }
 }

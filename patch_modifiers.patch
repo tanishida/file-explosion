@@ -1,0 +1,60 @@
+--- file-explosion/ContentView+iPhone.swift
++++ file-explosion/ContentView+iPhone.swift
+@@ -8,7 +8,9 @@
+     var iPhoneBody: some View {
+         NavigationStack {
+             mainContentView
++#if os(iOS)
+                 .navigationBarTitleDisplayMode(.inline)
++#endif
+                 .toolbar { toolbarContent }
+         }
+     }
+@@ -172,7 +174,11 @@
+                             }
+                         }
+                     }
++#if os(iOS)
+                     .tabViewStyle(.page(indexDisplayMode: .never))
++#else
++                    .tabViewStyle(.automatic)
++#endif
+                 }
+             } else {
+                 if filteredFiles.isEmpty {
+@@ -393,7 +399,11 @@
+     }
+     
+     var toolbarContent: some ToolbarContent {
++#if os(iOS)
+         Group {
+             ToolbarItem(placement: .navigationBarLeading) {
+                 if isUnlocked {
+                     Menu {
+                         Picker("カテゴリ表示", selection: $selectedAppFolderID) {
+@@ -409,7 +419,11 @@
+                     }
+                 }
+             }
+             ToolbarItem(placement: .navigationBarTrailing) {
+                 if isUnlocked {
+                     Button {
+                         editingFolderName = ""; folderAlertMode = .create; showingFolderAlert = true
+@@ -420,6 +434,22 @@
+                 }
+             }
+         }
++#else
++        Group {
++            ToolbarItem(placement: .primaryAction) {
++                if isUnlocked {
++                    Button {
++                        editingFolderName = ""; folderAlertMode = .create; showingFolderAlert = true
++                    } label: { Image(systemName: "folder.badge.plus") }
++                }
++            }
++        }
++#endif
+     }
+     
+     // MARK: - その他のビューコンポーネント
