@@ -93,6 +93,7 @@ struct ContentView: View {
     @State var isDropTargetedHome: Bool = false
     @State var isDropTargetedFiles: Bool = false
     @State var sidebarDropTarget: FolderSelection? = nil
+    @State var macToastMessages: [MacToast] = []
     @State var gridItemFrames: [UUID: CGRect] = [:]
     @State var dragStartPos: CGPoint? = nil
     @State var dragCurrentPos: CGPoint? = nil
@@ -254,6 +255,7 @@ extension ContentView {
                 saveFolders(); refreshFiles(); adjustGalleryIndexAfterRemoval()
             }
         )
+        .toolbar(.hidden)
     }
     
     func adjustGalleryIndexAfterRemoval() {
@@ -659,5 +661,35 @@ struct TimerSetupView: View {
             }
             .onAppear { tempTimerLimit = timerLimitSeconds }
         }
+    }
+}
+
+// MARK: - Mac Toast
+struct MacToast: Identifiable {
+    let id = UUID()
+    let icon: String
+    let color: Color
+    let title: String
+    let count: Int
+}
+
+struct MacToastView: View {
+    let toast: MacToast
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: toast.icon)
+                .foregroundColor(toast.color)
+                .font(.title3)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(toast.title).font(.headline)
+                Text("\(toast.count)件をアップロードしました").font(.caption).foregroundColor(.secondary)
+            }
+            Spacer()
+        }
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .shadow(radius: 6)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: 320)
     }
 }

@@ -123,6 +123,16 @@ extension ContentView {
                 }
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            VStack(alignment: .trailing, spacing: 8) {
+                ForEach(macToastMessages) { toast in
+                    MacToastView(toast: toast)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                }
+            }
+            .padding(.bottom, 24)
+            .animation(.spring(), value: macToastMessages.count)
+        }
     }
     
     // MARK: - ダッシュボード（ホーム）
@@ -304,25 +314,61 @@ extension ContentView {
         group.notify(queue: .main) {
             guard !tempURLs.isEmpty else { self.isProcessing = false; return }
             DispatchQueue.global(qos: .userInitiated).async {
+                // カテゴリ別カウント
+                var imagCount = 0; var videoCount = 0; var pdfCount = 0; var otherCount = 0
                 for (index, url) in tempURLs.enumerated() {
                     DispatchQueue.main.async {
                         self.processingMessage = "極秘処理中... (\(index + 1)/\(tempURLs.count))"
                     }
                     autoreleasepool {
+                        let ext = url.pathExtension.lowercased().isEmpty ? "data" : url.pathExtension.lowercased()
                         KeyManager.createAndSaveKey()
                         _ = KeyManager.encryptFile(
                             inputURL: url,
-                            outputURL: FileManagerHelper.generateNewFileURL(
-                                originalExtension: url.pathExtension.isEmpty ? "data" : url.pathExtension
-                            )
+                            outputURL: FileManagerHelper.generateNewFileURL(originalExtension: ext)
                         )
                         try? FileManager.default.removeItem(at: url)
+                        // カテゴリ判定
+                        let imageExts = ["jpg","jpeg","png","heic","heif","gif","tiff","bmp","webp","raw"]
+                        let videoExts = ["mp4","mov","m4v","avi","mkv","hevc","3gp"]
+                        if imageExts.contains(ext) { imagCount += 1 }
+                        else if videoExts.contains(ext) { videoCount += 1 }
+                        else if ext == "pdf" { pdfCount += 1 }
+                        else { otherCount += 1 }
                     }
                 }
-                DispatchQueue.main.async { self.refreshFiles(); self.isProcessing = false }
+                DispatchQueue.main.async {
+                    self.refreshFiles()
+                    self.isProcessing = false
+                    // アップロードされたカテゴリのうち最初のものにナビゲート
+                    if imagCount > 0 { self.selectedFolder = 0; self.folderSelection = .unclassified; self.macShowHome = false }
+                    else if videoCount > 0 { self.selectedFolder = 1; self.folderSelection = .unclassified; self.macShowHome = false }
+                    else if pdfCount > 0 { self.selectedFolder = 2; self.folderSelection = .unclassified; self.macShowHome = false }
+                    else if otherCount > 0 { self.selectedFolder = 3; self.folderSelection = .unclassified; self.macShowHome = false }
+                    // カテゴリごとにトーストを追加
+                    var toasts: [MacToast] = []
+                    if imagCount > 0 { toasts.append(MacToast(icon: "photo.fill", color: .blue, title: "写真", count: imagCount)) }
+                    if videoCount > 0 { toasts.append(MacToast(icon: "play.rectangle.fill", color: .purple, title: "動画", count: videoCount)) }
+                    if pdfCount > 0 { toasts.append(MacToast(icon: "doc.richtext.fill", color: .red, title: "PDF", count: pdfCount)) }
+                    if otherCount > 0 { toasts.append(MacToast(icon: "doc.fill", color: .gray, title: "その他", count: otherCount)) }
+                    self.showMacToasts(toasts)
+                }
             }
         }
         return true
+    }
+    
+    func showMacToasts(_ toasts: [MacToast]) {
+        for (i, toast) in toasts.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.3) {
+                withAnimation(.spring()) { self.macToastMessages.append(toast) }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    withAnimation(.easeOut) {
+                        self.macToastMessages.removeAll { $0.id == toast.id }
+                    }
+                }
+            }
+        }
     }
     
     private func macStatCard(icon: String, color: Color, label: String, count: Int, categoryIndex: Int) -> some View {        Button {
