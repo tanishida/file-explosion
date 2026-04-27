@@ -8,11 +8,72 @@ import UIKit
 typealias PlatformImage = UIImage
 typealias PlatformViewRepresentable = UIViewRepresentable
 typealias PlatformView = UIView
+
+// AVPlayerLayerをUIViewに埋め込みネイティブ再生バーを非表示にする（Mac Catalyst・Designed for iPad両対応）
+import AVFoundation
+struct AVPlayerLayerView: UIViewRepresentable {
+    let player: AVPlayer
+    func makeUIView(context: Context) -> PlayerUIView {
+        let view = PlayerUIView()
+        view.player = player
+        return view
+    }
+    func updateUIView(_ uiView: PlayerUIView, context: Context) {
+        uiView.player = player
+    }
+    class PlayerUIView: UIView {
+        override class var layerClass: AnyClass { AVPlayerLayer.self }
+        var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
+        var player: AVPlayer? {
+            get { playerLayer.player }
+            set {
+                playerLayer.player = newValue
+                playerLayer.videoGravity = .resizeAspect
+            }
+        }
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            playerLayer.frame = bounds
+        }
+    }
+}
+
 #elseif os(macOS)
 import AppKit
+import AVFoundation
 typealias PlatformImage = NSImage
 typealias PlatformViewRepresentable = NSViewRepresentable
 typealias PlatformView = NSView
+
+// ネイティブmacOS: AVPlayerLayerをNSViewに埋め込みネイティブ再生バーを非表示にする
+struct AVPlayerLayerView: NSViewRepresentable {
+    let player: AVPlayer
+    func makeNSView(context: Context) -> PlayerNSView {
+        let view = PlayerNSView()
+        view.player = player
+        return view
+    }
+    func updateNSView(_ nsView: PlayerNSView, context: Context) {
+        nsView.player = player
+    }
+    class PlayerNSView: NSView {
+        var player: AVPlayer? {
+            didSet { playerLayer.player = player }
+        }
+        private let playerLayer = AVPlayerLayer()
+        override init(frame: NSRect) {
+            super.init(frame: frame)
+            wantsLayer = true
+            playerLayer.videoGravity = .resizeAspect
+            layer?.addSublayer(playerLayer)
+        }
+        required init?(coder: NSCoder) { fatalError() }
+        override func layout() {
+            super.layout()
+            playerLayer.frame = bounds
+        }
+    }
+}
 
 extension NSImage {
     var cgImage: CGImage? {
@@ -576,45 +637,66 @@ struct DetailView: View {
     
     @ViewBuilder
     private func contentView(url: URL, in size: CGSize) -> some View {
-        Group {
-            if file.isVideo {
-                if let player {
-                    VideoPlayer(player: player)
-                        .disabled(isMacOrPad)
+        if file.isPDF {
+            // PDF: scaleEffect/offset/rotationを使わずそのまま表示
+            PDFKitView(url: url)
+                .frame(width: size.width, height: size.height)
+                .overlay(alignment: .topLeading) {
+                    if isMacOrPad {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.white.opacity(0.85))
+                                .shadow(radius: 4)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(16)
+                    }
                 }
-            } else if file.isImage,
-                      let data = try? Data(contentsOf: url),
-                      let image = PlatformImage(data: data) {
-                Image(platformImage: image)
-                    .resizable()
-                    .scaledToFit()
+        } else {
+            Group {
+                if file.isVideo {
+                    if let player {
+                        if isMacOrPad {
+                            AVPlayerLayerView(player: player)
+                        } else {
+                            VideoPlayer(player: player)
+                        }
+                    }
+                } else if file.isImage,
+                          let data = try? Data(contentsOf: url),
+                          let image = PlatformImage(data: data) {
+                    Image(platformImage: image)
+                        .resizable()
+                        .scaledToFit()
+                }
             }
-        }
-        .frame(
-            width: isLandscapeMode ? size.height : size.width,
-            height: isLandscapeMode ? size.width : size.height
-        )
-        .rotationEffect(.degrees(isLandscapeMode ? 90 : 0))
-        .scaleEffect(scale == 1.0 ? max(0.8, 1.0 - abs(globalDragOffset.height) / 1000) : scale, anchor: zoomAnchor)
-        .offset(scale > 1.0 ? offset : globalDragOffset)
-        .overlay {
-            if file.isPDF {
-                PDFKitView(url: url)
-                    .frame(
-                        width: isLandscapeMode ? size.height : size.width,
-                        height: isLandscapeMode ? size.width : size.height
-                    )
-                    .rotationEffect(.degrees(isLandscapeMode ? 90 : 0))
-            }
-        }
-        .overlay {
-            if !file.isPDF {
+            .frame(
+                width: isLandscapeMode ? size.height : size.width,
+                height: isLandscapeMode ? size.width : size.height
+            )
+            .rotationEffect(.degrees(isLandscapeMode ? 90 : 0))
+            .scaleEffect(scale == 1.0 ? max(0.8, 1.0 - abs(globalDragOffset.height) / 1000) : scale, anchor: zoomAnchor)
+            .offset(scale > 1.0 ? offset : globalDragOffset)
+            .overlay {
                 interactionOverlay(in: size)
             }
-        }
-        .overlay {
-            if showUI, globalDragOffset == .zero, !isMacOrPad, file.isVideo, let player {
-                videoControls(player: player, in: size)
+            .overlay {
+                if showUI, globalDragOffset == .zero, file.isVideo, let player {
+                    videoControls(player: player, in: size)
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                if isMacOrPad, file.isVideo {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.white.opacity(0.85))
+                            .shadow(radius: 4)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(16)
+                }
             }
         }
     }
@@ -645,7 +727,10 @@ struct DetailView: View {
                 .onTapGesture(count: 2) { location in
                     handleDoubleTap(at: location, in: size)
                 }
-                .allowsHitTesting(false)
+                .onTapGesture {
+                    withAnimation(.easeInOut) { showUI.toggle() }
+                    if showUI, isPlaying { triggerAutoHide() }
+                }
         } else {
             Color.clear
                 .contentShape(Rectangle())
@@ -897,9 +982,10 @@ struct PDFKitView: PlatformViewRepresentable {
         let view = PDFView()
         view.document = PDFDocument(url: url)
         view.autoScales = true
+        view.displayMode = .singlePageContinuous
+        view.displaysPageBreaks = true
         return view
     }
-    
     func updateNSView(_ nsView: PDFView, context: Context) {
         if nsView.document?.documentURL != url {
             nsView.document = PDFDocument(url: url)
@@ -910,9 +996,13 @@ struct PDFKitView: PlatformViewRepresentable {
         let view = PDFView()
         view.document = PDFDocument(url: url)
         view.autoScales = true
+        view.displayMode = .singlePageContinuous
+        view.displaysPageBreaks = true
+        view.backgroundColor = .black
+        // スクロール方向を縦に固定
+        view.displayDirection = .vertical
         return view
     }
-    
     func updateUIView(_ uiView: PDFView, context: Context) {
         if uiView.document?.documentURL != url {
             uiView.document = PDFDocument(url: url)
