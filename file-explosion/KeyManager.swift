@@ -32,8 +32,7 @@ class KeyManager {
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: keyTag,
-            kSecReturnData as String: false,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            kSecReturnData as String: false
         ]
         var item: CFTypeRef?
         return SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess
@@ -43,11 +42,11 @@ class KeyManager {
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: keyTag,
-            kSecReturnData as String: true,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            kSecReturnData as String: true
         ]
         var item: CFTypeRef?
-        if SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess, let keyData = item as? Data {
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        if status == errSecSuccess, let keyData = item as? Data {
             return SymmetricKey(data: keyData)
         }
         return nil
@@ -79,6 +78,44 @@ class KeyManager {
         } catch {
             print("暗号化エラー: \(error)")
             return false
+        }
+    }
+    
+    static func decryptFileWithMessage(inputURL: URL, outputURL: URL) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyTag,
+            kSecReturnData as String: true
+        ]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess, let keyData = item as? Data else {
+            return "Keychain error: \(status)"
+        }
+        let key = SymmetricKey(data: keyData)
+        
+        do {
+            let input = try FileHandle(forReadingFrom: inputURL)
+            FileManager.default.createFile(atPath: outputURL.path, contents: nil, attributes: nil)
+            let output = try FileHandle(forWritingTo: outputURL)
+            
+            defer { try? input.close(); try? output.close() }
+            
+            var isEOF = false
+            while !isEOF {
+                try autoreleasepool {
+                    if let chunk = try input.read(upToCount: encryptedChunkSize), !chunk.isEmpty {
+                        let sealedBox = try AES.GCM.SealedBox(combined: chunk)
+                        let decryptedData = try AES.GCM.open(sealedBox, using: key)
+                        try output.write(contentsOf: decryptedData)
+                    } else {
+                        isEOF = true
+                    }
+                }
+            }
+            return nil // Success
+        } catch {
+            return "Decryption error: \(error.localizedDescription)"
         }
     }
     

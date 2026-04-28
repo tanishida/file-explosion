@@ -125,8 +125,13 @@ struct ContentView: View {
                 loadFolders()
             }
             .onChange(of: scenePhase) { _, phase in
+#if os(macOS)
                 if (phase == .background || phase == .inactive) && isUnlocked { lockApp() }
                 else if phase == .active { checkTimeLimit() }
+#else
+                if phase == .background && isUnlocked { lockApp() }
+                else if phase == .active { checkTimeLimit() }
+#endif
             }
             .onChange(of: selectedItems) { _, _ in processSelectedPhotos() }
             .onChange(of: timerLimitSeconds) { _, _ in lastAccessDate = Date().timeIntervalSince1970 }
