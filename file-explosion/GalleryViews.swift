@@ -538,6 +538,7 @@ struct DetailView: View {
     
     @State private var decryptedURL: URL?
     @State private var isDecrypting = false
+    @State private var loadedImage: PlatformImage? // ← Add this for async image loading
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var currentTime: Double = 0
@@ -552,6 +553,7 @@ struct DetailView: View {
     @State private var lastOffset: CGSize = .zero
     @State private var zoomAnchor: UnitPoint = .center
     @State private var isMacOrPad = false
+    @State private var debugMessage = ""
     
     var zoomGesture: some Gesture {
         MagnificationGesture()
@@ -603,9 +605,22 @@ struct DetailView: View {
                             .foregroundColor(.white)
                             .padding(.top)
                     }
+                } else {
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(.yellow)
+                        Text("読み込み待機中またはエラー")
+                            .foregroundColor(.white)
+                        Text("Visible: \(isVisible ? "Yes" : "No")")
+                            .foregroundColor(.gray)
+                        Text("Debug: \(debugMessage)")
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
                 }
             }
-            .position(x: geo.size.width / 2, y: geo.size.height / 2)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
 #if os(iOS)
@@ -663,12 +678,26 @@ struct DetailView: View {
                             VideoPlayer(player: player)
                         }
                     }
-                } else if file.isImage,
-                          let data = try? Data(contentsOf: url),
-                          let image = PlatformImage(data: data) {
-                    Image(platformImage: image)
-                        .resizable()
-                        .scaledToFit()
+                } else if file.isImage {
+                    if let image = loadedImage {
+                        Image(platformImage: image)
+                            .resizable()
+                            .scaledToFit()
+                    } else {
+                        ProgressView().tint(.white)
+                    }
+                } else {
+                    VStack(spacing: 20) {
+                        Image(systemName: "doc.text.fill")
+                            .font(.system(size: 80))
+                            .foregroundColor(.gray)
+                        Text(file.displayName)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Text("このファイル形式のプレビューはサポートされていません")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
                 }
             }
             .frame(
@@ -852,18 +881,37 @@ struct DetailView: View {
     
     private func setupOrDecrypt() {
         let cacheURL = FileManagerHelper.getCacheURL(for: file)
-        if FileManager.default.fileExists(atPath: cacheURL.path) {
+        
+        let hasValidCache: Bool = {
+            guard FileManager.default.fileExists(atPath: cacheURL.path) else {
+                debugMessage = "No cache file."
+                return false
+            }
+            guard let attrs = try? FileManager.default.attributesOfItem(atPath: cacheURL.path) else {
+                debugMessage = "No cache attrs."
+                return false
+            }
+            let isValid = (attrs[.size] as? Int64 ?? 0) > 0
+            if !isValid { debugMessage = "Cache file size is 0." }
+            return isValid
+        }()
+        
+        if hasValidCache {
+            debugMessage = "Valid cache found. Setting up content."
             setupContent(url: cacheURL)
         } else {
+            try? FileManager.default.removeItem(at: cacheURL)
             isDecrypting = true
             DispatchQueue.global(qos: .userInitiated).async {
-                if KeyManager.decryptFile(inputURL: file.url, outputURL: cacheURL) {
+                if let errorMsg = KeyManager.decryptFileWithMessage(inputURL: file.url, outputURL: cacheURL) {
                     DispatchQueue.main.async {
-                        setupContent(url: cacheURL)
+                        self.debugMessage = errorMsg
+                        self.isDecrypting = false
                     }
                 } else {
                     DispatchQueue.main.async {
-                        isDecrypting = false
+                        self.debugMessage = "Decrypted successfully."
+                        self.setupContent(url: cacheURL)
                     }
                 }
             }
@@ -905,6 +953,18 @@ struct DetailView: View {
     private func setupContent(url: URL) {
         decryptedURL = url
         isDecrypting = false
+        
+        if file.isImage {
+            Task {
+                if let data = try? Data(contentsOf: url),
+                   let rawImage = PlatformImage(data: data) {
+                    let image = await preparedImage(rawImage)
+                    await MainActor.run {
+                        loadedImage = image
+                    }
+                }
+            }
+        }
         
         guard file.isVideo else { return }
         
