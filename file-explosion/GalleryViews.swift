@@ -713,6 +713,7 @@ struct DetailView: View {
             .overlay {
                 if showUI, globalDragOffset == .zero, file.isVideo, let player {
                     videoControls(player: player, in: size)
+                    skipControls(player: player, in: size)
                 }
             }
             .overlay(alignment: .topLeading) {
@@ -808,6 +809,69 @@ struct DetailView: View {
                     }
                 }
             }
+    }
+    
+    @ViewBuilder
+    private func skipControls(player: AVPlayer, in size: CGSize) -> some View {
+        let viewWidth = isLandscapeMode ? size.height : size.width
+        let btnSize = min(60, viewWidth * 0.12)
+        
+        HStack(spacing: min(20, viewWidth * 0.04)) {
+            skipButton(icon: "gobackward.30", seconds: -30, player: player, size: btnSize)
+            skipButton(icon: "gobackward.5", seconds: -5, player: player, size: btnSize)
+            
+            Button {
+                if isPlaying {
+                    player.pause()
+                } else {
+                    player.play()
+                }
+                isPlaying.toggle()
+                if isPlaying {
+                    triggerAutoHide()
+                } else {
+                    hideTask?.cancel()
+                }
+            } label: {
+                Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: btnSize * 0.5, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: btnSize * 1.2, height: btnSize * 1.2)
+                    .background(Color.black.opacity(0.6))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, min(10, viewWidth * 0.02))
+            
+            skipButton(icon: "goforward.5", seconds: 5, player: player, size: btnSize)
+            skipButton(icon: "goforward.30", seconds: 30, player: player, size: btnSize)
+        }
+        .frame(
+            width: isLandscapeMode ? size.height : size.width,
+            height: isLandscapeMode ? size.width : size.height
+        )
+        .rotationEffect(.degrees(isLandscapeMode ? 90 : 0))
+        .transition(.opacity)
+        .allowsHitTesting(true)
+    }
+    
+    private func skipButton(icon: String, seconds: Double, player: AVPlayer, size: CGFloat) -> some View {
+        Button {
+            let currentTime = player.currentTime()
+            let newTime = CMTimeAdd(currentTime, CMTime(seconds: seconds, preferredTimescale: 600))
+            player.seek(to: newTime)
+            if isPlaying {
+                triggerAutoHide()
+            }
+        } label: {
+            Image(systemName: icon)
+                .font(.system(size: size * 0.4, weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: size, height: size)
+                .background(Color.black.opacity(0.5))
+                .clipShape(Circle())
+        }
+        .buttonStyle(.plain)
     }
     
     @ViewBuilder
