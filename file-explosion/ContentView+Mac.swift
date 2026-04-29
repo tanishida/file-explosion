@@ -153,8 +153,12 @@ extension ContentView {
                             TimerDisplayView(isUnlocked: isUnlocked)
                         }
                         Spacer()
-                        Button("設定") { showingTimerSetup = true }
-                            .buttonStyle(.bordered)
+                        VStack(spacing: 8) {
+                            Button("タイマー設定") { showingTimerSetup = true }
+                                .buttonStyle(.bordered)
+                            Button("通知設定") { showingNotificationSetup = true }
+                                .buttonStyle(.bordered)
+                        }
                     }
                     .padding()
                     .background(Color.secondary.opacity(0.08))
