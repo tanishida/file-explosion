@@ -232,6 +232,32 @@ struct ContentView: View {
 // MARK: - 共通UIパーツ
 extension ContentView {
     
+    func notificationStatusString() -> String {
+        if lastAccessDate > 0 {
+            let passed = Date().timeIntervalSince1970 - lastAccessDate
+            let timeRemaining = timerLimitSeconds - passed
+            let warningTime = timeRemaining - notificationWarningThreshold
+            if warningTime <= 0 {
+                return "🔕 通知オフ"
+            }
+        }
+        if !notificationEnabled { return "🔕 通知オフ" }
+        
+        let seconds = Int(notificationWarningThreshold)
+        let totalMin = seconds / 60
+        let d = totalMin / 1440
+        let h = (totalMin % 1440) / 60
+        let m = totalMin % 60
+        
+        var parts: [String] = []
+        if d > 0 { parts.append("\(d)日") }
+        if h > 0 { parts.append("\(h)時間") }
+        if m > 0 || (d == 0 && h == 0) { parts.append("\(m)分") }
+        let timeString = parts.joined(separator: " ")
+        
+        return "🔔 自爆の\(timeString)前に設定"
+    }
+    
     @ViewBuilder
     var processingOverlay: some View {
         if isProcessing {
@@ -446,6 +472,13 @@ extension ContentView {
             isDestroyed = true
             KeyManager.destroyKey(); FileManagerHelper.deleteAllFiles(); FileManagerHelper.clearTempCache()
             appFolders.removeAll(); fileFolderMap.removeAll(); favoriteFileIDs.removeAll(); saveFolders()
+        } else if notificationEnabled {
+            let timeRemaining = timerLimitSeconds - passed
+            let warningTime = timeRemaining - notificationWarningThreshold
+            if warningTime <= 0 {
+                notificationEnabled = false
+                UserDefaults.standard.set(false, forKey: "notificationEnabled")
+            }
         }
     }
     
@@ -940,7 +973,7 @@ struct NotificationSetupView: View {
         var parts: [String] = []
         if d > 0 { parts.append("\(d)日") }
         if h > 0 { parts.append("\(h)時間") }
-        if m > 0 { parts.append("\(m)分") }
-        return parts.isEmpty ? "0分" : parts.joined(separator: " ")
+        if m > 0 || (d == 0 && h == 0) { parts.append("\(m)分") }
+        return parts.joined(separator: " ")
     }
 }

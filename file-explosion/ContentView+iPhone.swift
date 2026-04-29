@@ -55,9 +55,8 @@ extension ContentView {
                     .foregroundColor(isUnlocked ? .green : .red)
                 TimerDisplayView(isUnlocked: isUnlocked)
                 
-                if notificationEnabled {
-                    let minStr = Int(notificationWarningThreshold) / 60
-                    Text("🔔 \(minStr)分前に通知")
+                if notificationEnabled && notificationStatusString() != "🔕 通知オフ" {
+                    Text(notificationStatusString())
                         .font(.caption).foregroundColor(.blue)
                         .padding(.top, 2)
                 } else {

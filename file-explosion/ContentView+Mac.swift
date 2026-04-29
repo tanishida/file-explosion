@@ -86,6 +86,16 @@ extension ContentView {
                                 .font(.system(.title2, design: .monospaced)).fontWeight(.bold)
                                 .foregroundColor(.red)
                             TimerDisplayView(isUnlocked: false)
+                            
+                            if notificationEnabled && notificationStatusString() != "🔕 通知オフ" {
+                                Text(notificationStatusString())
+                                    .font(.caption).foregroundColor(.blue)
+                                    .padding(.top, 2)
+                            } else {
+                                Text("🔕 通知オフ")
+                                    .font(.caption).foregroundColor(.gray)
+                                    .padding(.top, 2)
+                            }
                         }
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
@@ -151,6 +161,16 @@ extension ContentView {
                                 .font(.system(.title2, design: .monospaced)).fontWeight(.bold)
                                 .foregroundColor(isUnlocked ? .green : .red)
                             TimerDisplayView(isUnlocked: isUnlocked)
+                            
+                            if notificationEnabled && notificationStatusString() != "🔕 通知オフ" {
+                                Text(notificationStatusString())
+                                    .font(.caption).foregroundColor(.blue)
+                                    .padding(.top, 2)
+                            } else {
+                                Text("🔕 通知オフ")
+                                    .font(.caption).foregroundColor(.gray)
+                                    .padding(.top, 2)
+                            }
                         }
                         Spacer()
                         VStack(spacing: 8) {
@@ -604,6 +624,13 @@ extension ContentView {
                         Image(systemName: "timer").foregroundColor(.secondary).font(.caption)
                         TimerDisplayView(isUnlocked: isUnlocked)
                             .font(.system(.caption, design: .monospaced))
+                    }
+                    if notificationEnabled && notificationStatusString() != "🔕 通知オフ" {
+                        Text(notificationStatusString())
+                            .font(.system(size: 9)).foregroundColor(.blue)
+                    } else {
+                        Text("🔕 通知オフ")
+                            .font(.system(size: 9)).foregroundColor(.gray)
                     }
                 }
             }
