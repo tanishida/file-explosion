@@ -197,7 +197,7 @@ struct ContentView: View {
             }
 #if os(iOS)
             .fullScreenCover(isPresented: $showingTimerSetup) { TimerSetupView() }
-            .sheet(isPresented: $showingNotificationSetup) { NotificationSetupView() }
+            .fullScreenCover(isPresented: $showingNotificationSetup) { NotificationSetupView() }
 #else
             .sheet(isPresented: $showingTimerSetup) { TimerSetupView() }
             .sheet(isPresented: $showingNotificationSetup) { NotificationSetupView() }
@@ -894,6 +894,10 @@ struct NotificationSetupView: View {
     @State private var tempEnabled: Bool = false
     @State private var tempThreshold: Double = 86400
     
+    @State private var days: Double = 0
+    @State private var hours: Double = 0
+    @State private var minutes: Double = 0
+    
     var maxThreshold: Double { max(120, timerLimitSeconds - 60) }
     
     var body: some View {
@@ -917,7 +921,23 @@ struct NotificationSetupView: View {
                                 .font(.headline)
                                 .foregroundColor(.blue)
                             
-                            Slider(value: $tempThreshold, in: 60...maxThreshold, step: 60)
+                            VStack(spacing: 15) {
+                                HStack {
+                                    Text("日").frame(width: 40, alignment: .leading)
+                                    Slider(value: Binding(get: { days }, set: { days = $0; syncThreshold() }), in: 0...30, step: 1)
+                                    Text("\(Int(days))").frame(width: 30, alignment: .trailing)
+                                }
+                                HStack {
+                                    Text("時間").frame(width: 40, alignment: .leading)
+                                    Slider(value: Binding(get: { hours }, set: { hours = $0; syncThreshold() }), in: 0...23, step: 1)
+                                    Text("\(Int(hours))").frame(width: 30, alignment: .trailing)
+                                }
+                                HStack {
+                                    Text("分").frame(width: 40, alignment: .leading)
+                                    Slider(value: Binding(get: { minutes }, set: { minutes = $0; syncThreshold() }), in: 0...59, step: 1)
+                                    Text("\(Int(minutes))").frame(width: 30, alignment: .trailing)
+                                }
+                            }
                         }
                         .padding(.vertical, 10)
                     }
@@ -955,7 +975,23 @@ struct NotificationSetupView: View {
         .onAppear {
             tempEnabled = notificationEnabled
             tempThreshold = min(max(60, warningThreshold), maxThreshold)
+            let totalMin = Int(tempThreshold) / 60
+            days = Double(totalMin / 1440)
+            hours = Double((totalMin % 1440) / 60)
+            minutes = Double(totalMin % 60)
         }
+    }
+    
+    private func syncThreshold() {
+        let total = (days * 86400) + (hours * 3600) + (minutes * 60)
+        let clamped = min(max(60, total), maxThreshold)
+        
+        let totalMin = Int(clamped) / 60
+        days = Double(totalMin / 1440)
+        hours = Double((totalMin % 1440) / 60)
+        minutes = Double(totalMin % 60)
+        
+        tempThreshold = clamped
     }
     
     private func save() {
