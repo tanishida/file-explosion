@@ -2,6 +2,7 @@ import SwiftUI
 import LocalAuthentication
 import PhotosUI
 import UniformTypeIdentifiers
+import UserNotifications
 
 struct AppFolder: Identifiable, Codable, Hashable {
     var id = UUID()
@@ -23,6 +24,9 @@ struct ContentView: View {
     @AppStorage("lastAccessDate") var lastAccessDate: Double = 0
     @AppStorage("timerLimitSeconds") var timerLimitSeconds: Double = 604800
     @AppStorage("appPasscode") var appPasscode: String = ""
+    
+    @AppStorage("notificationEnabled") var notificationEnabled: Bool = false
+    @AppStorage("notificationWarningThreshold") var notificationWarningThreshold: Double = 86400
     
     @State var isUnlocked = false
     @State var secretFiles: [SecretFile] = []
@@ -62,6 +66,13 @@ struct ContentView: View {
     @State var showingPasscodeSetup = false
     @State var isFirstSetupMode = false
     @State var showingTimerSetup = false
+    @State var showingNotificationSetup = false
+    
+    @State var toastMessage: String? = nil
+    @State var toastWorkItem: DispatchWorkItem? = nil
+    
+    // MARK: - Manager
+    @State private var notificationManager = NotificationManager.shared
     
     // MARK: - ギャラリー連携
     @State var showingGallery = false
@@ -116,6 +127,20 @@ struct ContentView: View {
     
     private var baseBodyContent: some View {
         platformRootView
+            .overlay(alignment: .top) {
+                if let message = toastMessage {
+                    Text(message)
+                        .font(.subheadline)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(Color.black.opacity(0.8))
+                        .foregroundColor(.white)
+                        .cornerRadius(25)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.top, 20)
+                        .zIndex(1)
+                }
+            }
             .overlay { processingOverlay }
             .disabled(isProcessing)
             .onReceive(timer) { _ in checkTimeLimit() }
@@ -125,16 +150,20 @@ struct ContentView: View {
                 loadFolders()
             }
             .onChange(of: scenePhase) { _, phase in
-#if os(macOS)
                 if (phase == .background || phase == .inactive) && isUnlocked { lockApp() }
-                else if phase == .active { checkTimeLimit() }
-#else
-                if phase == .background && isUnlocked { lockApp() }
-                else if phase == .active { checkTimeLimit() }
-#endif
+                else if phase == .active { checkTimeLimit(); updateNotificationSchedule() }
             }
             .onChange(of: selectedItems) { _, _ in processSelectedPhotos() }
-            .onChange(of: timerLimitSeconds) { _, _ in lastAccessDate = Date().timeIntervalSince1970 }
+            .onChange(of: timerLimitSeconds) { _, _ in
+                lastAccessDate = Date().timeIntervalSince1970
+                updateNotificationSchedule()
+                showToast("タイマー設定を更新しました")
+            }
+            .onChange(of: lastAccessDate) { _, _ in updateNotificationSchedule() }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("UpdateLocalNotifications"))) { _ in
+                updateNotificationSchedule()
+                showToast("通知設定を保存しました")
+            }
     }
     
     private var bodyContent: some View {
@@ -168,8 +197,10 @@ struct ContentView: View {
             }
 #if os(iOS)
             .fullScreenCover(isPresented: $showingTimerSetup) { TimerSetupView() }
+            .fullScreenCover(isPresented: $showingNotificationSetup) { NotificationSetupView() }
 #else
             .sheet(isPresented: $showingTimerSetup) { TimerSetupView() }
+            .sheet(isPresented: $showingNotificationSetup) { NotificationSetupView() }
 #endif
             .alert(folderAlertMode == .create ? "新規フォルダ" : "名前を変更", isPresented: $showingFolderAlert) {
                 TextField("フォルダ名", text: $editingFolderName)
@@ -200,6 +231,32 @@ struct ContentView: View {
 
 // MARK: - 共通UIパーツ
 extension ContentView {
+    
+    func notificationStatusString() -> String {
+        if lastAccessDate > 0 {
+            let passed = Date().timeIntervalSince1970 - lastAccessDate
+            let timeRemaining = timerLimitSeconds - passed
+            let warningTime = timeRemaining - notificationWarningThreshold
+            if warningTime <= 0 {
+                return "🔕 通知オフ"
+            }
+        }
+        if !notificationEnabled { return "🔕 通知オフ" }
+        
+        let seconds = Int(notificationWarningThreshold)
+        let totalMin = seconds / 60
+        let d = totalMin / 1440
+        let h = (totalMin % 1440) / 60
+        let m = totalMin % 60
+        
+        var parts: [String] = []
+        if d > 0 { parts.append("\(d)日") }
+        if h > 0 { parts.append("\(h)時間") }
+        if m > 0 || (d == 0 && h == 0) { parts.append("\(m)分") }
+        let timeString = parts.joined(separator: " ")
+        
+        return "🔔 自爆の\(timeString)前に設定"
+    }
     
     @ViewBuilder
     var processingOverlay: some View {
@@ -269,6 +326,14 @@ extension ContentView {
             if newCount == 0 { showingGallery = false }
             else if galleryIndex >= newCount { galleryIndex = newCount - 1 }
         }
+    }
+    
+    func showToast(_ message: String) {
+        toastWorkItem?.cancel()
+        withAnimation { toastMessage = message }
+        let workItem = DispatchWorkItem { withAnimation { toastMessage = nil } }
+        toastWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: workItem)
     }
 }
 
@@ -407,7 +472,28 @@ extension ContentView {
             isDestroyed = true
             KeyManager.destroyKey(); FileManagerHelper.deleteAllFiles(); FileManagerHelper.clearTempCache()
             appFolders.removeAll(); fileFolderMap.removeAll(); favoriteFileIDs.removeAll(); saveFolders()
+        } else if notificationEnabled {
+            let timeRemaining = timerLimitSeconds - passed
+            let warningTime = timeRemaining - notificationWarningThreshold
+            if warningTime <= 0 {
+                notificationEnabled = false
+                UserDefaults.standard.set(false, forKey: "notificationEnabled")
+            }
         }
+    }
+    
+    func updateNotificationSchedule() {
+        let isEnabled = UserDefaults.standard.bool(forKey: "notificationEnabled")
+        let threshold = UserDefaults.standard.object(forKey: "notificationWarningThreshold") as? Double ?? 86400
+        let limit = UserDefaults.standard.object(forKey: "timerLimitSeconds") as? Double ?? 604800
+        let access = UserDefaults.standard.object(forKey: "lastAccessDate") as? Double ?? 0
+        
+        NotificationManager.shared.updateNotification(
+            lastAccessDate: access > 0 ? access : lastAccessDate,
+            timerLimitSeconds: limit > 0 ? limit : timerLimitSeconds,
+            enabled: isEnabled,
+            threshold: threshold
+        )
     }
     
     func batchDecryptAll() {
@@ -696,5 +782,234 @@ struct MacToastView: View {
         .shadow(radius: 6)
         .padding(.horizontal, 16)
         .frame(maxWidth: 320)
+    }
+}
+
+// MARK: - Notification Components
+
+class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
+    static let shared = NotificationManager()
+    
+    override private init() {
+        super.init()
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+    }
+    
+    func requestPermission() {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound, .badge, .providesAppNotificationSettings]) { granted, error in
+            if let error = error {
+                print("Notification permission error: \(error)")
+            }
+        }
+    }
+    
+    func scheduleWarningNotification(timeRemaining: Double, threshold: Double) {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllPendingNotificationRequests() // Clear existing
+        
+        let warningTime = timeRemaining - threshold
+        if warningTime <= 0 { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "自爆タイマー警告")
+        content.body = String(localized: "設定された自爆タイマーの期限が近づいています。アプリを開いてタイマーをリセットしてください。")
+        content.sound = .default
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: warningTime, repeats: false)
+        let request = UNNotificationRequest(identifier: "SelfDestructWarning", content: content, trigger: trigger)
+        
+        center.add(request) { error in
+            if let error = error {
+                print("Error scheduling notification: \(error)")
+            }
+        }
+    }
+    
+    func cancelAllNotifications() {
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+    }
+    
+    func updateNotification(lastAccessDate: Double, timerLimitSeconds: Double, enabled: Bool, threshold: Double) {
+        cancelAllNotifications()
+        if !enabled || lastAccessDate == 0 { return }
+        
+        let passed = Date().timeIntervalSince1970 - lastAccessDate
+        let timeRemaining = timerLimitSeconds - passed
+        
+        let center = UNUserNotificationCenter.current()
+        let uniqueID = UUID().uuidString
+        
+        // 事前警告（指定時間前）
+        let warningTime = timeRemaining - threshold
+        if warningTime > 0 {
+            let content = UNMutableNotificationContent()
+            content.title = String(localized: "【警告】自爆タイマー")
+            content.body = String(localized: "設定された自爆タイマーの期限が近づいています。アプリを開いてタイマーをリセットしてください。")
+            content.sound = .default
+            
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: warningTime, repeats: false)
+            let request = UNNotificationRequest(identifier: "SelfDestructWarning_\(uniqueID)", content: content, trigger: trigger)
+            center.add(request)
+        }
+        
+        // 完全消去時（0秒）
+        if timeRemaining > 0 {
+            let destroyContent = UNMutableNotificationContent()
+            destroyContent.title = String(localized: "自爆タイマー起動")
+            destroyContent.body = String(localized: "自爆タイマーの時間を超過したため、全データの消去プロセスが有効になりました。")
+            destroyContent.sound = .default
+            
+            let trigger2 = UNTimeIntervalNotificationTrigger(timeInterval: timeRemaining, repeats: false)
+            let request2 = UNNotificationRequest(identifier: "SelfDestructAlert_\(uniqueID)", content: destroyContent, trigger: trigger2)
+            center.add(request2)
+        }
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        if #available(macOS 11.0, iOS 14.0, *) {
+            completionHandler([.banner, .list, .sound, .badge])
+        } else {
+            completionHandler([.alert, .sound, .badge])
+        }
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        completionHandler()
+    }
+}
+
+struct NotificationSetupView: View {
+    @Environment(\.dismiss) var dismiss
+    @AppStorage("notificationEnabled") private var notificationEnabled: Bool = false
+    @AppStorage("notificationWarningThreshold") private var warningThreshold: Double = 86400 // Default 1 day
+    @AppStorage("timerLimitSeconds") private var timerLimitSeconds: Double = 604800
+    
+    @State private var tempEnabled: Bool = false
+    @State private var tempThreshold: Double = 86400
+    
+    @State private var days: Double = 0
+    @State private var hours: Double = 0
+    @State private var minutes: Double = 0
+    
+    var maxThreshold: Double { max(120, timerLimitSeconds - 60) }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("通知設定")) {
+                    Toggle("事前警告通知を有効にする", isOn: $tempEnabled)
+                        .onChange(of: tempEnabled) { _, newValue in
+                            if newValue {
+                                NotificationManager.shared.requestPermission()
+                            } else {
+                                NotificationManager.shared.cancelAllNotifications()
+                            }
+                        }
+                }
+                
+                if tempEnabled {
+                    Section(header: Text("通知タイミング (自爆までの残り時間)"), footer: Text("指定可能な範囲: 1分前 〜 \(formatTime(maxThreshold))前")) {
+                        VStack(spacing: 20) {
+                            Text("\(formatTime(tempThreshold))前に通知")
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                            
+                            VStack(spacing: 15) {
+                                HStack {
+                                    Text("日").frame(width: 40, alignment: .leading)
+                                    Slider(value: Binding(get: { days }, set: { days = $0; syncThreshold() }), in: 0...30, step: 1)
+                                    Text("\(Int(days))").frame(width: 30, alignment: .trailing)
+                                }
+                                HStack {
+                                    Text("時間").frame(width: 40, alignment: .leading)
+                                    Slider(value: Binding(get: { hours }, set: { hours = $0; syncThreshold() }), in: 0...23, step: 1)
+                                    Text("\(Int(hours))").frame(width: 30, alignment: .trailing)
+                                }
+                                HStack {
+                                    Text("分").frame(width: 40, alignment: .leading)
+                                    Slider(value: Binding(get: { minutes }, set: { minutes = $0; syncThreshold() }), in: 0...59, step: 1)
+                                    Text("\(Int(minutes))").frame(width: 30, alignment: .trailing)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 10)
+                    }
+                }
+            }
+            .navigationTitle("自爆の通知設定")
+#if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        save()
+                        dismiss()
+                    }
+                }
+            }
+#else
+            .padding()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        save()
+                        dismiss()
+                    }
+                }
+            }
+#endif
+        }
+        .onAppear {
+            tempEnabled = notificationEnabled
+            tempThreshold = min(max(60, warningThreshold), maxThreshold)
+            let totalMin = Int(tempThreshold) / 60
+            days = Double(totalMin / 1440)
+            hours = Double((totalMin % 1440) / 60)
+            minutes = Double(totalMin % 60)
+        }
+    }
+    
+    private func syncThreshold() {
+        let total = (days * 86400) + (hours * 3600) + (minutes * 60)
+        let clamped = min(max(60, total), maxThreshold)
+        
+        let totalMin = Int(clamped) / 60
+        days = Double(totalMin / 1440)
+        hours = Double((totalMin % 1440) / 60)
+        minutes = Double(totalMin % 60)
+        
+        tempThreshold = clamped
+    }
+    
+    private func save() {
+        notificationEnabled = tempEnabled
+        warningThreshold = tempThreshold
+        NotificationCenter.default.post(name: Notification.Name("UpdateLocalNotifications"), object: nil)
+    }
+    
+    private func formatTime(_ seconds: Double) -> String {
+        let totalMin = Int(seconds) / 60
+        let d = totalMin / 1440
+        let h = (totalMin % 1440) / 60
+        let m = totalMin % 60
+        
+        var parts: [String] = []
+        if d > 0 { parts.append("\(d)日") }
+        if h > 0 { parts.append("\(h)時間") }
+        if m > 0 || (d == 0 && h == 0) { parts.append("\(m)分") }
+        return parts.joined(separator: " ")
     }
 }
