@@ -904,9 +904,17 @@ extension ContentView {
                 Spacer()
                 Image(systemName: searchText.isEmpty ? "tray" : "magnifyingglass")
                     .font(.system(size: 48)).foregroundColor(.secondary)
-                Text(searchText.isEmpty
-                     ? (showingFavoritesOnly ? "お気に入りがありません" : "ファイルがありません")
-                     : "「\(searchText)」に一致するファイルがありません")
+                Group {
+                    if searchText.isEmpty {
+                        if showingFavoritesOnly {
+                            Text("お気に入りがありません")
+                        } else {
+                            Text("ファイルがありません")
+                        }
+                    } else {
+                        Text("「\(searchText)」に一致するファイルがありません")
+                    }
+                }
                 .foregroundColor(.secondary)
                 Spacer()
             }

@@ -320,7 +320,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No Favorites"
+            "value": "No favorites"
           }
         }
       }
@@ -330,7 +330,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add to Favorites"
+            "value": "Add to favorites"
           }
         }
       }
@@ -340,7 +340,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remove from Favorites"
+            "value": "Remove from favorites"
           }
         }
       }
@@ -1082,7 +1082,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uncategorized"
+            "value": "Unclassified"
           }
         }
       }
@@ -1092,7 +1092,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Move to Uncategorized"
+            "value": "Return to Unclassified"
           }
         }
       }
@@ -1102,7 +1102,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No Uncategorized Files"
+            "value": "No unclassified files"
           }
         }
       }
@@ -1520,6 +1520,130 @@
           "stringUnit": {
             "state": "translated",
             "value": "🔔 Set to notify %@ before destruction"
+          }
+        }
+      }
+    },
+    "%lld個のファイルを一時フォルダへ出力しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exported %lld files to temporary folder"
+          }
+        }
+      }
+    },
+    "%lld日": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days"
+          }
+        }
+      }
+    },
+    "%lld時間": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld hours"
+          }
+        }
+      }
+    },
+    "%lld分": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld mins"
+          }
+        }
+      }
+    },
+    "No cache file.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No cache file."
+          }
+        }
+      }
+    },
+    "No cache attrs.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No cache attrs."
+          }
+        }
+      }
+    },
+    "Cache file size is 0.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cache file size is 0."
+          }
+        }
+      }
+    },
+    "Valid cache found. Setting up content.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valid cache found. Setting up content."
+          }
+        }
+      }
+    },
+    "Decrypted successfully.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypted successfully."
+          }
+        }
+      }
+    },
+    "通知設定を保存しました": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification settings saved"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知設定を保存しました"
+          }
+        }
+      }
+    },
+    "タイマー設定を更新しました": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer settings updated"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タイマー設定を更新しました"
           }
         }
       }
