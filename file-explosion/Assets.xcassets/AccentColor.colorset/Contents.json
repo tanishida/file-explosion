@@ -2,6 +2,12 @@
   "colors" : [
     {
       "idiom" : "universal"
+    },
+    {
+      "idiom" : "iphone"
+    },
+    {
+      "idiom" : "ipad"
     }
   ],
   "info" : {
