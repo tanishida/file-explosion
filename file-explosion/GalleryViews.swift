@@ -1150,11 +1150,15 @@ struct MacExportSheet: View {
             Text("書き出しの準備ができました")
                 .font(.headline)
             
-            Text(urls.count == 1
-                 ? urls[0].lastPathComponent
-                 : "\(urls.count)個のファイルを一時フォルダへ出力しました")
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
+            if urls.count == 1 {
+                Text(urls[0].lastPathComponent)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("\(urls.count)個のファイルを一時フォルダへ出力しました")
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
             
             HStack {
                 Button("閉じる") {

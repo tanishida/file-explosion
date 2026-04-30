@@ -157,12 +157,12 @@ struct ContentView: View {
             .onChange(of: timerLimitSeconds) { _, _ in
                 lastAccessDate = Date().timeIntervalSince1970
                 updateNotificationSchedule()
-                showToast("タイマー設定を更新しました")
+                showToast(String(localized: "タイマー設定を更新しました"))
             }
             .onChange(of: lastAccessDate) { _, _ in updateNotificationSchedule() }
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("UpdateLocalNotifications"))) { _ in
                 updateNotificationSchedule()
-                showToast("通知設定を保存しました")
+                showToast(String(localized: "通知設定を保存しました"))
             }
     }
     
@@ -232,7 +232,7 @@ struct ContentView: View {
 // MARK: - 共通UIパーツ
 extension ContentView {
     
-    func notificationStatusString() -> String {
+    func notificationStatusString() -> LocalizedStringKey {
         if lastAccessDate > 0 {
             let passed = Date().timeIntervalSince1970 - lastAccessDate
             let timeRemaining = timerLimitSeconds - passed
@@ -250,9 +250,9 @@ extension ContentView {
         let m = totalMin % 60
         
         var parts: [String] = []
-        if d > 0 { parts.append("\(d)日") }
-        if h > 0 { parts.append("\(h)時間") }
-        if m > 0 || (d == 0 && h == 0) { parts.append("\(m)分") }
+        if d > 0 { parts.append(String(localized: "\(d)日")) }
+        if h > 0 { parts.append(String(localized: "\(h)時間")) }
+        if m > 0 || (d == 0 && h == 0) { parts.append(String(localized: "\(m)分")) }
         let timeString = parts.joined(separator: " ")
         
         return "🔔 自爆の\(timeString)前に設定"
@@ -605,7 +605,7 @@ extension ContentView {
 // MARK: - 共有UIコンポーネント（iPhone・Mac両方で使う）
 
 struct FolderChip: View {
-    let title: String
+    let title: LocalizedStringKey
     var icon: String? = nil
     var customTint: Color = .blue
     let isSelected: Bool
@@ -1007,9 +1007,9 @@ struct NotificationSetupView: View {
         let m = totalMin % 60
         
         var parts: [String] = []
-        if d > 0 { parts.append("\(d)日") }
-        if h > 0 { parts.append("\(h)時間") }
-        if m > 0 || (d == 0 && h == 0) { parts.append("\(m)分") }
+        if d > 0 { parts.append(String(localized: "\(d)日")) }
+        if h > 0 { parts.append(String(localized: "\(h)時間")) }
+        if m > 0 || (d == 0 && h == 0) { parts.append(String(localized: "\(m)分")) }
         return parts.joined(separator: " ")
     }
 }

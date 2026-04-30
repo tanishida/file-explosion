@@ -246,7 +246,7 @@ extension ContentView {
                            }
                 
                 ForEach(appFolders.filter { $0.category == selectedFolder }) { folder in
-                    FolderChip(title: folder.name, icon: "folder.fill", customTint: .blue,
+                    FolderChip(title: LocalizedStringKey(folder.name), icon: "folder.fill", customTint: .blue,
                                isSelected: selectedAppFolderID == folder.id && !showingFavoritesOnly) {
                         selectedAppFolderID = folder.id; showingFavoritesOnly = false
                     }
