@@ -76,6 +76,13 @@
             ReferencedContainer = "container:file-explosion.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "SIGNALING_SERVER_URL"
+            value = "wss://xexk11ad2e.execute-api.ap-northeast-1.amazonaws.com/production/"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

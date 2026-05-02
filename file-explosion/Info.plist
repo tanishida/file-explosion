@@ -4,6 +4,10 @@
 <dict>
 	<key>CFBundleGetInfoString</key>
 	<string>Privacy - Photo Library Usage Description</string>
+	<key>CFBundleSignature</key>
+	<string></string>
+	<key>SignalingServerURL</key>
+	<string>$(SIGNALING_SERVER_URL_VALUE)</string>
 	<key>UIFileSharingEnabled</key>
 	<false/>
 </dict>

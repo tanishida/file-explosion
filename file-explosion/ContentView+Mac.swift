@@ -234,6 +234,12 @@ extension ContentView {
                         ) { batchDecryptAll() }
                         
                         macActionButton(
+                            label: "デバイス間転送 (P2P)",
+                            icon: "paperplane.fill",
+                            color: .purple
+                        ) { showingFileTransfer = true }
+                        
+                        macActionButton(
                             label: "パスコードを変更",
                             icon: "lock.rotation",
                             color: .teal

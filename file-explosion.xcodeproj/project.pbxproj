@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		66F1667A2444DDEF86636B86 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 3E0D6E41E26EC66EECE200DE /* WebRTC */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		599E7E652F94D24100BBA489 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66F1667A2444DDEF86636B86 /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = "file-explosion";
 			packageProductDependencies = (
+				3E0D6E41E26EC66EECE200DE /* WebRTC */,
 			);
 			productName = "file-explosion";
 			productReference = 599E7E552F94D24000BBA489 /* file-explosion.app */;
@@ -147,8 +153,6 @@
 				599E7E672F94D24100BBA489 /* file-explosionTests */,
 			);
 			name = "file-explosionTests";
-			packageProductDependencies = (
-			);
 			productName = "file-explosionTests";
 			productReference = 599E7E642F94D24100BBA489 /* file-explosionTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -170,8 +174,6 @@
 				599E7E712F94D24100BBA489 /* file-explosionUITests */,
 			);
 			name = "file-explosionUITests";
-			packageProductDependencies = (
-			);
 			productName = "file-explosionUITests";
 			productReference = 599E7E6E2F94D24100BBA489 /* file-explosionUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -209,6 +211,9 @@
 			);
 			mainGroup = 599E7E4C2F94D24000BBA489;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F97E98610D6D19B9AD1FA021 /* XCRemoteSwiftPackageReference "WebRTC" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 599E7E562F94D24000BBA489 /* Products */;
 			projectDirPath = "";
@@ -341,6 +346,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				NEW_SETTING = "";
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = auto;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -401,6 +407,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				NEW_SETTING = "";
 				SDKROOT = auto;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -452,6 +459,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.file-explosion";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
+				SIGNALING_SERVER_URL = "wss://xexk11ad2e.execute-api.ap-northeast-1.amazonaws.com/production";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -505,6 +513,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.file-explosion";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
+				SIGNALING_SERVER_URL = "wss://xexk11ad2e.execute-api.ap-northeast-1.amazonaws.com/production";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -626,6 +635,24 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F97E98610D6D19B9AD1FA021 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 113.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3E0D6E41E26EC66EECE200DE /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WebRTC;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 599E7E4D2F94D24000BBA489 /* Project object */;
 }

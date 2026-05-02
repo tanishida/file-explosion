@@ -2,29 +2,21 @@ import Foundation
 import CryptoKit
 
 class SecureFileManager {
-    // 共有鍵 (実際は鍵交換などで安全に共有された対称鍵を想定)
-    private var symmetricKey: SymmetricKey
+    private var secureKeyManager: SecureKeyManager
     
     // WebRTCのDataChannelでの送信に適したサイズ (例: 64KB = 65536)
     // 実際の利用では送信パケットサイズの上限を考慮して設定します
     private let chunkSize = 65536 
     
-    init(key: SymmetricKey) {
-        self.symmetricKey = key
+    init(keyManager: SecureKeyManager) {
+        self.secureKeyManager = keyManager
     }
     
     /// ファイルを暗号化してチャンクに分割する
     /// - Parameter data: 送信したい元のファイルデータ
     /// - Returns: 暗号化されたチャンクデータの配列
     func encryptAndChunk(data: Data) throws -> [Data] {
-        // 全体を一括で暗号化する以外にもチャンクごとに暗号化する方法がありますが、
-        // 今回はシンプルに全体を暗号化してから分割します。
-        // （巨大なファイルの場合は、ストリーム暗号やチャンクごとの暗号化が推奨されます）
-        
-        let sealedBox = try AES.GCM.seal(data, using: self.symmetricKey)
-        guard let encryptedData = sealedBox.combined else {
-            throw NSError(domain: "SecureFileManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to combine encrypted data"])
-        }
+        let encryptedData = try secureKeyManager.encrypt(data: data)
         
         var chunks: [Data] = []
         var offset = 0
@@ -50,9 +42,6 @@ class SecureFileManager {
             combinedData.append(chunk)
         }
         
-        let sealedBox = try AES.GCM.SealedBox(combined: combinedData)
-        let decryptedData = try AES.GCM.open(sealedBox, using: self.symmetricKey)
-        
-        return decryptedData
+        return try secureKeyManager.decrypt(data: combinedData)
     }
 }

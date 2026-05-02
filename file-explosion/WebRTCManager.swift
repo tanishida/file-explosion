@@ -4,9 +4,10 @@ import WebRTC
 protocol WebRTCManagerDelegate: AnyObject {
     func webRTCManager(_ manager: WebRTCManager, didChangeConnectionState state: RTCIceConnectionState)
     func webRTCManager(_ manager: WebRTCManager, didReceiveData data: Data)
-    func webRTCManager(_ manager: WebRTCManager, shouldSendIceCandidate candidate: RTCIceCandidate)
-    func webRTCManager(_ manager: WebRTCManager, shouldSendOffer offer: RTCSessionDescription)
-    func webRTCManager(_ manager: WebRTCManager, shouldSendAnswer answer: RTCSessionDescription)
+    func webRTCManager(_ manager: WebRTCManager, didReceiveMessage message: String)
+    func webRTCManager(_ manager: WebRTCManager, shouldSendIceCandidate candidateDict: [String: Any])
+    func webRTCManager(_ manager: WebRTCManager, shouldSendOffer offerDict: [String: Any])
+    func webRTCManager(_ manager: WebRTCManager, shouldSendAnswer answerDict: [String: Any])
 }
 
 class WebRTCManager: NSObject {
@@ -58,7 +59,8 @@ class WebRTCManager: NSObject {
         self.peerConnection?.offer(for: constraints) { [weak self] (description, error) in
             guard let self = self, let sdp = description else { return }
             self.peerConnection?.setLocalDescription(sdp, completionHandler: { error in
-                self.delegate?.webRTCManager(self, shouldSendOffer: sdp)
+                let offerDict: [String: Any] = ["type": "offer", "sdp": sdp.sdp]
+                self.delegate?.webRTCManager(self, shouldSendOffer: offerDict)
             })
         }
     }
@@ -70,7 +72,8 @@ class WebRTCManager: NSObject {
             self.peerConnection?.answer(for: constraints, completionHandler: { (description, error) in
                 guard let answer = description else { return }
                 self.peerConnection?.setLocalDescription(answer, completionHandler: { error in
-                    self.delegate?.webRTCManager(self, shouldSendAnswer: answer)
+                    let answerDict: [String: Any] = ["type": "answer", "sdp": answer.sdp]
+                    self.delegate?.webRTCManager(self, shouldSendAnswer: answerDict)
                 })
             })
         })
@@ -86,6 +89,10 @@ class WebRTCManager: NSObject {
         self.peerConnection?.add(candidate)
     }
     
+    var bufferedAmount: UInt64 {
+        return self.dataChannel?.bufferedAmount ?? 0
+    }
+    
     func sendData(_ data: Data) {
         guard let dataChannel = self.dataChannel, dataChannel.readyState == .open else {
             print("DataChannel is not open")
@@ -95,6 +102,14 @@ class WebRTCManager: NSObject {
         let success = dataChannel.sendData(buffer)
         if !success {
             print("Failed to send data over DataChannel")
+        }
+    }
+    
+    func sendMessage(_ text: String) {
+        guard let dataChannel = self.dataChannel, dataChannel.readyState == .open else { return }
+        if let data = text.data(using: .utf8) {
+            let buffer = RTCDataBuffer(data: data, isBinary: false)
+            dataChannel.sendData(buffer)
         }
     }
 }
@@ -111,7 +126,12 @@ extension WebRTCManager: RTCPeerConnectionDelegate {
     }
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {}
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        self.delegate?.webRTCManager(self, shouldSendIceCandidate: candidate)
+        let dict: [String: Any] = [
+            "candidate": candidate.sdp,
+            "sdpMLineIndex": candidate.sdpMLineIndex,
+            "sdpMid": candidate.sdpMid ?? ""
+        ]
+        self.delegate?.webRTCManager(self, shouldSendIceCandidate: dict)
     }
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {}
     func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {
@@ -127,7 +147,13 @@ extension WebRTCManager: RTCDataChannelDelegate {
     
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
         DispatchQueue.main.async {
-            self.delegate?.webRTCManager(self, didReceiveData: buffer.data)
+            if buffer.isBinary {
+                self.delegate?.webRTCManager(self, didReceiveData: buffer.data)
+            } else {
+                if let str = String(data: buffer.data, encoding: .utf8) {
+                    self.delegate?.webRTCManager(self, didReceiveMessage: str)
+                }
+            }
         }
     }
 }

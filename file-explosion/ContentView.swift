@@ -64,6 +64,7 @@ struct ContentView: View {
     @State var faceIDFailCount = 0
     @State var showPasscodeEntry = false
     @State var showingPasscodeSetup = false
+    @State var showingFileTransfer = false
     @State var isFirstSetupMode = false
     @State var showingTimerSetup = false
     @State var showingNotificationSetup = false
@@ -198,9 +199,11 @@ struct ContentView: View {
 #if os(iOS)
             .fullScreenCover(isPresented: $showingTimerSetup) { TimerSetupView() }
             .fullScreenCover(isPresented: $showingNotificationSetup) { NotificationSetupView() }
+            .fullScreenCover(isPresented: $showingFileTransfer) { FileTransferView() }
 #else
             .sheet(isPresented: $showingTimerSetup) { TimerSetupView() }
             .sheet(isPresented: $showingNotificationSetup) { NotificationSetupView() }
+            .sheet(isPresented: $showingFileTransfer) { FileTransferView() }
 #endif
             .alert(folderAlertMode == .create ? "新規フォルダ" : "名前を変更", isPresented: $showingFolderAlert) {
                 TextField("フォルダ名", text: $editingFolderName)

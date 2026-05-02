@@ -124,6 +124,14 @@ extension ContentView {
                 }
                 .padding(.horizontal)
                 
+                SectionHeader(title: "データ共有")
+                Button(action: { showingFileTransfer = true }) {
+                    Label("デバイス間転送 (P2P)", systemImage: "paperplane.fill")
+                        .frame(maxWidth: .infinity).padding()
+                        .background(Color.purple).foregroundColor(.white).cornerRadius(10)
+                }
+                .padding(.horizontal)
+                
                 SectionHeader(title: "パフォーマンス")
                 Button(action: { batchDecryptAll() }) {
                     Label("全ファイルを一括事前解読", systemImage: "bolt.fill")
