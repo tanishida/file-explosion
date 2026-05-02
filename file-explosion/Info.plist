@@ -6,6 +6,10 @@
 	<string>Privacy - Photo Library Usage Description</string>
 	<key>CFBundleSignature</key>
 	<string></string>
+	<key>NSCameraUsageDescription</key>
+	<string>アプリ内で直接、安全に写真や動画を撮影してシークレット領域に保存するためにカメラを使用します。</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>アプリ内で安全に動画を撮影（録音）してシークレット領域に保存するためにマイクを使用します。</string>
 	<key>SignalingServerURL</key>
 	<string>$(SIGNALING_SERVER_URL_VALUE)</string>
 	<key>TURN_SERVER_PASSWORD</key>
