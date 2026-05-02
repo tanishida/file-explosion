@@ -29,9 +29,14 @@ class WebRTCManager: NSObject {
         let config = RTCConfiguration()
         
         let stunServer = RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])
-        let turnServer = RTCIceServer(urlStrings: ["turn:YOUR_VPS_IP:3478"],
-                                      username: "your_username",
-                                      credential: "your_password")
+        
+        let turnUrl = ProcessInfo.processInfo.environment["TURN_SERVER_URL"] ?? Bundle.main.object(forInfoDictionaryKey: "TURN_SERVER_URL") as? String ?? "turn:YOUR_VPS_IP:3478"
+        let turnUsername = ProcessInfo.processInfo.environment["TURN_SERVER_USERNAME"] ?? Bundle.main.object(forInfoDictionaryKey: "TURN_SERVER_USERNAME") as? String ?? "your_username"
+        let turnPassword = ProcessInfo.processInfo.environment["TURN_SERVER_PASSWORD"] ?? Bundle.main.object(forInfoDictionaryKey: "TURN_SERVER_PASSWORD") as? String ?? "your_password"
+        
+        let turnServer = RTCIceServer(urlStrings: [turnUrl],
+                                      username: turnUsername,
+                                      credential: turnPassword)
         
         config.iceServers = [stunServer, turnServer]
         config.sdpSemantics = .unifiedPlan

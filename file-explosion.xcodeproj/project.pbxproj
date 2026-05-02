@@ -456,6 +456,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.2.1;
+				NEW_SETTING1 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.file-explosion";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -466,6 +467,9 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TURN_SERVER_PASSWORD = super_secret_password_123;
+				TURN_SERVER_URL = "turn:163.44.112.9:3478";
+				TURN_SERVER_USERNAME = limitbox;
 			};
 			name = Debug;
 		};
@@ -510,6 +514,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.2.1;
+				NEW_SETTING1 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.file-explosion";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -520,6 +525,9 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TURN_SERVER_PASSWORD = super_secret_password_123;
+				TURN_SERVER_URL = "turn:163.44.112.9:3478";
+				TURN_SERVER_USERNAME = limitbox;
 			};
 			name = Release;
 		};
