@@ -1,1787 +1,2066 @@
 {
-  "sourceLanguage" : "ja",
-  "strings" : {
-    "" : {
-
+  "sourceLanguage": "ja",
+  "strings": {
+    "": {
+      "localizations": {}
     },
-    "・%lld項目を選択中" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " · %lld selected"
+    "・%lld項目を選択中": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · %lld selected"
           }
         }
       }
     },
-    "「%@」に一致するファイルがありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No files matching \"%@\""
+    "「%@」に一致するファイルがありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No files matching \"%@\""
           }
         }
       }
     },
-    "「待機」ボタンを押して接続をお待ちください" : {
-
-    },
-    "「接続」ボタンを押してください" : {
-
-    },
-    "【警告】システムの初期化" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[WARNING] System Initialization"
+    "「待機」ボタンを押して接続をお待ちください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please press \"Wait\" and wait for a connection"
           }
         }
       }
     },
-    "【警告】システム停止" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[WARNING] System Halted"
+    "「接続」ボタンを押してください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please press \"Connect\" button"
           }
         }
       }
     },
-    "【警告】自爆タイマー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[WARNING] Deadman Switch Timer"
+    "【警告】システムの初期化": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[WARNING] System Initialization"
           }
         }
       }
     },
-    "%@" : {
-
-    },
-    "%@前に通知" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notify %@ before"
+    "【警告】システム停止": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[WARNING] System Halted"
           }
         }
       }
     },
-    "%02d日 %02d:%02d:%02d" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%02d days %02d:%02d:%02d"
+    "【警告】自爆タイマー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[WARNING] Deadman Switch Timer"
           }
         }
       }
     },
-    "%lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld"
+    "%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
           }
         }
       }
     },
-    "%lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld / %2$lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld / %2$lld"
+    "%@前に通知": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notify %@ before"
           }
         }
       }
     },
-    "%lld%%" : {
-
-    },
-    "%lld件をアップロードしました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uploaded %lld items"
+    "%02d日 %02d:%02d:%02d": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%02d days %02d:%02d:%02d"
           }
         }
       }
     },
-    "%lld個のファイルを一時フォルダへ出力しました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exported %lld files to temporary folder"
+    "%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
           }
         }
       }
     },
-    "%lld分" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld mins"
-          }
-        }
-      }
-    },
-    "%lld日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld days"
-          }
-        }
-      }
-    },
-    "%lld時間" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld hours"
-          }
-        }
-      }
-    },
-    "%lld項目" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld items"
-          }
-        }
-      }
-    },
-    "%lld項目を選択" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld selected"
-          }
-        }
-      }
-    },
-    "+ 端末IDを新しく保存する" : {
-
-    },
-    "❌ パスコード不一致" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "❌ Incorrect Passcode"
-          }
-        }
-      }
-    },
-    "🔔 自爆の%@前に設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "🔔 Set to notify %@ before destruction"
-          }
-        }
-      }
-    },
-    "🔕 通知オフ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "🔕 Notifications Off"
-          }
-        }
-      }
-    },
-    "1. 相手の端末を選択して接続" : {
-
-    },
-    "1. 自分の端末IDで待機" : {
-
-    },
-    "1ヶ月" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Month"
-          }
-        }
-      }
-    },
-    "1日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Day"
-          }
-        }
-      }
-    },
-    "1時間" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Hour"
-          }
-        }
-      }
-    },
-    "1週間" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 Week"
-          }
-        }
-      }
-    },
-    "2. 受信待機" : {
-
-    },
-    "2. 相手が接続したらファイルを選択" : {
-
-    },
-    "3日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3 Days"
-          }
-        }
-      }
-    },
-    "4桁の数字" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "4-digit PIN"
-          }
-        }
-      }
-    },
-    "10分" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "10 Minutes"
-          }
-        }
-      }
-    },
-    "30分" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "30 Minutes"
-          }
-        }
-      }
-    },
-    "Cache file size is 0." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cache file size is 0."
-          }
-        }
-      }
-    },
-    "Connection State: " : {
-
-    },
-    "Debug: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Debug: %@"
-          }
-        }
-      }
-    },
-    "Decrypted successfully." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypted successfully."
-          }
-        }
-      }
-    },
-    "Face ID でロック解除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlock with Face ID"
-          }
-        }
-      }
-    },
-    "Face IDに戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Return to Face ID"
-          }
-        }
-      }
-    },
-    "Finderで表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show in Finder"
-          }
-        }
-      }
-    },
-    "LimitBox" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LimitBox"
+    "%lld / %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld / %2$lld"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "リミットボックス"
+        "ja": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld / %2$lld"
           }
         }
       }
     },
-    "No cache attrs." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No cache attrs."
+    "%lld%%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
           }
         }
       }
     },
-    "No cache file." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No cache file."
+    "%lld件をアップロードしました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uploaded %lld items"
           }
         }
       }
     },
-    "PDF" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PDF"
+    "%lld個のファイルを一時フォルダへ出力しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exported %lld files to temporary folder"
           }
         }
       }
     },
-    "Valid cache found. Setting up content." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Valid cache found. Setting up content."
+    "%lld分": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld mins"
           }
         }
       }
     },
-    "Visible: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Visible: %@"
+    "%lld日": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days"
           }
         }
       }
     },
-    "あなたの端末ID:" : {
-
-    },
-    "アプリ内に保存されました:" : {
-
-    },
-    "お気に入り" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Favorites"
+    "%lld時間": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld hours"
           }
         }
       }
     },
-    "お気に入りがありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No favorites"
+    "%lld項目": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld items"
           }
         }
       }
     },
-    "お気に入りに追加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add to favorites"
+    "%lld項目を選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld selected"
           }
         }
       }
     },
-    "お気に入りを解除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove from favorites"
+    "+ 端末IDを新しく保存する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+ Save new device ID"
           }
         }
       }
     },
-    "カテゴリ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Category"
+    "❌ パスコード不一致": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "❌ Incorrect Passcode"
           }
         }
       }
     },
-    "キャンセル" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+    "🔔 自爆の%@前に設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔔 Set to notify %@ before destruction"
           }
         }
       }
     },
-    "ここにファイルをドロップ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drop files here"
+    "🔕 通知オフ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔕 Notifications Off"
           }
         }
       }
     },
-    "ここにファイルをドロップしてアップロード" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drop files here to upload"
+    "1. 相手の端末を選択して接続": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Select peer device to connect"
           }
         }
       }
     },
-    "このファイルを完全に削除しますか？" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permanently delete this file?"
+    "1. 自分の端末IDで待機": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Wait with your device ID"
           }
         }
       }
     },
-    "このファイルを送信する" : {
-
-    },
-    "このファイル形式のプレビューはサポートされていません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview for this file format is not supported"
+    "1ヶ月": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Month"
           }
         }
       }
     },
-    "このフォルダは空です" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This folder is empty"
+    "1日": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Day"
           }
         }
       }
     },
-    "サイズ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Size"
+    "1時間": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Hour"
           }
         }
       }
     },
-    "システムを再構築" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rebuild System"
+    "1週間": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Week"
           }
         }
       }
     },
-    "システムを初期化" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Initialize System"
+    "2. 受信待機": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Standby for reception"
           }
         }
       }
     },
-    "システムを起動中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Starting system..."
+    "2. 相手が接続したらファイルを選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Select file when peer connects"
           }
         }
       }
     },
-    "すべて選択" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select All"
+    "3日": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 Days"
           }
         }
       }
     },
-    "すべて選択解除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deselect All"
+    "4桁の数字": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4-digit PIN"
           }
         }
       }
     },
-    "セキュリティ管理" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Security Management"
+    "10分": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 Minutes"
           }
         }
       }
     },
-    "その他" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Others"
+    "30分": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 Minutes"
           }
         }
       }
     },
-    "タイマー設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Timer Settings"
+    "Cache file size is 0.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cache file size is 0."
           }
         }
       }
     },
-    "タイマー設定を更新しました" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Timer settings updated"
+    "Connection State: ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection State: "
+          }
+        }
+      }
+    },
+    "Debug: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Debug: %@"
+          }
+        }
+      }
+    },
+    "Decrypted successfully.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypted successfully."
+          }
+        }
+      }
+    },
+    "Face ID でロック解除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with Face ID"
+          }
+        }
+      }
+    },
+    "Face IDに戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to Face ID"
+          }
+        }
+      }
+    },
+    "Finderで表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in Finder"
+          }
+        }
+      }
+    },
+    "LimitBox": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LimitBox"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "タイマー設定を更新しました"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リミットボックス"
           }
         }
       }
     },
-    "データは完全に消去されました。\n再構築が必要です。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Data has been completely erased.\nRebuild required."
+    "No cache attrs.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No cache attrs."
           }
         }
       }
     },
-    "データ共有" : {
-
-    },
-    "デバイス間転送 (P2P)" : {
-
-    },
-    "ドロップしてアップロード" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drop to upload"
-          }
-        }
-      }
-    },
-    "パスコードを使う" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use Passcode"
-          }
-        }
-      }
-    },
-    "パスコードを入力" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter Passcode"
-          }
-        }
-      }
-    },
-    "パスコードを入力してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please enter passcode"
-          }
-        }
-      }
-    },
-    "パスコードを変更" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change Passcode"
-          }
-        }
-      }
-    },
-    "パスコードを変更する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change Passcode"
-          }
-        }
-      }
-    },
-    "パフォーマンス" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Performance"
-          }
-        }
-      }
-    },
-    "ファイル" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Files"
-          }
-        }
-      }
-    },
-    "ファイルがありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Files"
-          }
-        }
-      }
-    },
-    "ファイルを追加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add File"
-          }
-        }
-      }
-    },
-    "ファイルを選択" : {
-
-    },
-    "フォルダ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Folder"
-          }
-        }
-      }
-    },
-    "フォルダを追加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Folder"
-          }
-        }
-      }
-    },
-    "フォルダ内のファイルを全て解読" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypt All Files in Folder"
-          }
-        }
-      }
-    },
-    "フォルダ内を全て書き出し" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export All Files in Folder"
-          }
-        }
-      }
-    },
-    "フォルダ名" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Folder Name"
-          }
-        }
-      }
-    },
-    "プレビュー非対応" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview not supported"
-          }
-        }
-      }
-    },
-    "ホーム" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Home"
-          }
-        }
-      }
-    },
-    "モード" : {
-
-    },
-    "ロック解除中" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlocking..."
-          }
-        }
-      }
-    },
-    "一括事前解読" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pre-decrypt All"
-          }
-        }
-      }
-    },
-    "一括解読中... (%lld/%lld)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batch decrypting... (%lld/%lld)"
-          }
-        }
-      }
-    },
-    "一括解読中... (0/%lld)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batch decrypting... (%lld/%lld)"
-          }
-        }
-      }
-    },
-    "不一致です。最初からやり直し。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Does not match. Start over."
-          }
-        }
-      }
-    },
-    "事前警告通知を有効にする" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enable advance warning notifications"
-          }
-        }
-      }
-    },
-    "他" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
-          }
-        }
-      }
-    },
-    "作成" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create"
-          }
-        }
-      }
-    },
-    "保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        }
-      }
-    },
-    "保存した端末から選択" : {
-
-    },
-    "保存して閉じる" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save & Close"
-          }
-        }
-      }
-    },
-    "保管状況" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Storage Status"
-          }
-        }
-      }
-    },
-    "入力済み (変更可)" : {
-
-    },
-    "全てのデータが完全に消去されます。よろしいですか？\n※パスコード設定は維持されます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All data will be completely erased. Are you sure?\n* Passcode settings will be preserved."
-          }
-        }
-      }
-    },
-    "全ファイルを一括事前解読" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pre-decrypt All Files"
+    "No cache file.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No cache file."
           }
         }
       }
     },
-    "全ファイル消滅まであと" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time Until All Files Destroyed"
+    "PDF": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF"
           }
         }
       }
     },
-    "全ファイル消滅まで残り" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time Until All Files Destroyed"
+    "Valid cache found. Setting up content.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valid cache found. Setting up content."
           }
         }
       }
     },
-    "共有シートはMacではサポートされていません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share sheet is not supported on Mac"
+    "Visible: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visible: %@"
           }
         }
       }
     },
-    "写真" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photos"
+    "あなたの端末ID:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Device ID:"
           }
         }
       }
     },
-    "写真/動画" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photos/Videos"
+    "アプリ内に保存されました:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved in app:"
           }
         }
       }
     },
-    "写真/動画を追加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Photos/Videos"
+    "お気に入り": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorites"
           }
         }
       }
     },
-    "分" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Min"
+    "お気に入りがありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No favorites"
           }
         }
       }
     },
-    "初期化を実行" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Execute Initialization"
+    "お気に入りに追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to favorites"
           }
         }
       }
     },
-    "初期設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Initial Setup"
+    "お気に入りを解除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove from favorites"
           }
         }
       }
     },
-    "削除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
+    "カテゴリ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category"
           }
         }
       }
     },
-    "削除の確認" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirm Deletion"
+    "キャンセル": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         }
       }
     },
-    "動画" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Videos"
+    "ここにファイルをドロップ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop files here"
           }
         }
       }
     },
-    "受信(受け取る)" : {
-
-    },
-    "受信中... %@" : {
-
-    },
-    "受信中... %@ / %@" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "受信中... %1$@ / %2$@"
-          }
-        }
-      }
-    },
-    "受信完了!" : {
-
-    },
-    "名前" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        }
-      }
-    },
-    "名前を変更" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename"
-          }
-        }
-      }
-    },
-    "変更" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change"
-          }
-        }
-      }
-    },
-    "待機" : {
-
-    },
-    "待機ID: %@" : {
-
-    },
-    "復号中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypting..."
-          }
-        }
-      }
-    },
-    "戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
-          }
-        }
-      }
-    },
-    "指定可能な範囲: 1分前 〜 %@前" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selectable range: 1 min before - %@ before"
-          }
-        }
-      }
-    },
-    "接続" : {
-
-    },
-    "接続完了。ファイルを受信できます。" : {
-
-    },
-    "操作" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controls"
-          }
-        }
-      }
-    },
-    "数字4桁" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "4 digits"
-          }
-        }
-      }
-    },
-    "新しいパスコード(4桁)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Passcode (4 digits)"
-          }
-        }
-      }
-    },
-    "新規フォルダ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Folder"
-          }
-        }
-      }
-    },
-    "日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Days"
-          }
-        }
-      }
-    },
-    "時間" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hours"
-          }
-        }
-      }
-    },
-    "書き出し" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export"
-          }
-        }
-      }
-    },
-    "書き出しの準備ができました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ready to export"
-          }
-        }
-      }
-    },
-    "未分類" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unclassified"
-          }
-        }
-      }
-    },
-    "未分類に戻す" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Return to Unclassified"
-          }
-        }
-      }
-    },
-    "未分類のファイルがありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No unclassified files"
-          }
-        }
-      }
-    },
-    "検索" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search"
-          }
-        }
-      }
-    },
-    "極秘データの追加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Top Secret Data"
-          }
-        }
-      }
-    },
-    "極秘処理中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Processing secret data..."
-          }
-        }
-      }
-    },
-    "極秘処理中...\n（そのままお待ちください）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Processing secret data...\n(Please wait)"
-          }
-        }
-      }
-    },
-    "極秘処理中... (%lld/%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Processing secret data... (%lld/%lld)"
-          }
-        }
-      }
-    },
-    "次へ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
-          }
-        }
-      }
-    },
-    "準備中..." : {
-
-    },
-    "生体認証でロック解除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlock with Biometrics"
-          }
-        }
-      }
-    },
-    "生体認証に戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Return to Biometrics"
-          }
-        }
-      }
-    },
-    "画像・動画・PDF・その他のファイルに対応" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supports photos, videos, PDFs, and other files"
-          }
-        }
-      }
-    },
-    "相手の接続を待機中..." : {
-
-    },
-    "相手の端末ID" : {
-
-    },
-    "相手の端末に接続中..." : {
-
-    },
-    "確認のためもう一度" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirm Passcode"
+    "ここにファイルをドロップしてアップロード": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop files here to upload"
           }
         }
       }
     },
-    "移動" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move"
+    "このファイルを完全に削除しますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permanently delete this file?"
           }
         }
       }
     },
-    "移動先を選択" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select Destination"
+    "このファイルを送信する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send this file"
           }
         }
       }
     },
-    "種別" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type"
+    "このファイル形式のプレビューはサポートされていません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preview for this file format is not supported"
           }
         }
       }
-    },
-    "端末ID" : {
-
-    },
-    "端末の名前 (例: 自分のiPhone)" : {
-
-    },
-    "端末を保存" : {
-
-    },
-    "端末情報" : {
-
     },
-    "自爆タイマー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Timer"
+    "このフォルダは空です": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This folder is empty"
           }
         }
       }
     },
-    "自爆タイマーの時間を超過したため、全データの消去プロセスが有効になりました。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The deadman switch timer has expired. All data erasure process has been activated."
+    "サイズ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Size"
           }
         }
       }
     },
-    "自爆タイマー設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Settings"
+    "システムを再構築": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rebuild System"
           }
         }
       }
     },
-    "自爆タイマー警告" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Warning"
+    "システムを初期化": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Initialize System"
           }
         }
       }
     },
-    "自爆タイマー起動" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Activated"
+    "システムを起動中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting system..."
           }
         }
       }
     },
-    "自爆の通知" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Notifications"
+    "すべて選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select All"
           }
         }
       }
     },
-    "自爆の通知設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deadman Switch Notification Settings"
+    "すべて選択解除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deselect All"
           }
         }
       }
     },
-    "表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View"
+    "セキュリティ管理": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security Management"
           }
         }
       }
     },
-    "解読" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypt"
+    "その他": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Others"
           }
         }
       }
     },
-    "解読中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypting..."
+    "タイマー設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer Settings"
           }
         }
       }
     },
-    "解読中... (%lld/%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypting... (%lld/%lld)"
+    "タイマー設定を更新しました": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer settings updated"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "解読中... (%1$lld/%2$lld)"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タイマー設定を更新しました"
           }
         }
       }
     },
-    "解読中... (0/%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrypting... (0/%lld)"
+    "データは完全に消去されました。\n再構築が必要です。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data has been completely erased.\nRebuild required."
           }
         }
       }
     },
-    "解除する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlock"
+    "データ共有": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data Share"
           }
         }
       }
     },
-    "設定" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
+    "デバイス間転送 (P2P)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "P2P Device Transfer"
           }
         }
       }
     },
-    "設定された自爆タイマーの期限が近づいています。アプリを開いてタイマーをリセットしてください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The deadman switch timer is approaching its expiration. Please open the app to reset the timer."
+    "ドロップしてアップロード": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop to upload"
           }
         }
       }
     },
-    "設定した期間アプリを開かなかった場合、\nすべての極秘データが自動的に消去されます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If the app is not opened for the set period, all top-secret data will be automatically erased."
+    "パスコードを使う": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Passcode"
           }
         }
       }
     },
-    "設定を完了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Complete Setup"
+    "パスコードを入力": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter Passcode"
           }
         }
       }
     },
-    "認証してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please authenticate"
+    "パスコードを入力してください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please enter passcode"
           }
         }
       }
     },
-    "認証失敗 (%lld/3)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Authentication failed (%lld/3)"
+    "パスコードを変更": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Passcode"
           }
         }
       }
     },
-    "読み込み待機中またはエラー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting to load or error"
+    "パスコードを変更する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Passcode"
           }
         }
       }
     },
-    "追加日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date Added"
+    "パフォーマンス": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Performance"
           }
         }
       }
     },
-    "送信" : {
-
-    },
-    "送信(送る)" : {
-
-    },
-    "送信するファイルを選択" : {
-
-    },
-    "送信中..." : {
-
-    },
-    "送信完了!" : {
-
-    },
-    "通知タイミング (自爆までの残り時間)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notification timing (Time remaining)"
+    "ファイル": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files"
           }
         }
       }
     },
-    "通知設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notification Settings"
+    "ファイルがありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Files"
           }
         }
       }
     },
-    "通知設定を保存しました" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notification settings saved"
+    "ファイルを追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add File"
+          }
+        }
+      }
+    },
+    "ファイルを選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select File"
+          }
+        }
+      }
+    },
+    "フォルダ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folder"
+          }
+        }
+      }
+    },
+    "フォルダを追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Folder"
+          }
+        }
+      }
+    },
+    "フォルダ内のファイルを全て解読": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypt All Files in Folder"
+          }
+        }
+      }
+    },
+    "フォルダ内を全て書き出し": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export All Files in Folder"
+          }
+        }
+      }
+    },
+    "フォルダ名": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folder Name"
+          }
+        }
+      }
+    },
+    "プレビュー非対応": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preview not supported"
+          }
+        }
+      }
+    },
+    "ホーム": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
+          }
+        }
+      }
+    },
+    "モード": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode"
+          }
+        }
+      }
+    },
+    "ロック解除中": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocking..."
+          }
+        }
+      }
+    },
+    "一括事前解読": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pre-decrypt All"
+          }
+        }
+      }
+    },
+    "一括解読中... (%lld/%lld)": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batch decrypting... (%lld/%lld)"
+          }
+        }
+      }
+    },
+    "一括解読中... (0/%lld)": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batch decrypting... (%lld/%lld)"
+          }
+        }
+      }
+    },
+    "不一致です。最初からやり直し。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Does not match. Start over."
+          }
+        }
+      }
+    },
+    "事前警告通知を有効にする": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable advance warning notifications"
+          }
+        }
+      }
+    },
+    "他": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other"
+          }
+        }
+      }
+    },
+    "作成": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "保存": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "保存した端末から選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select from saved devices"
+          }
+        }
+      }
+    },
+    "保存して閉じる": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save & Close"
+          }
+        }
+      }
+    },
+    "保管状況": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage Status"
+          }
+        }
+      }
+    },
+    "入力済み (変更可)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entered (Editable)"
+          }
+        }
+      }
+    },
+    "全てのデータが完全に消去されます。よろしいですか？\n※パスコード設定は維持されます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All data will be completely erased. Are you sure?\n* Passcode settings will be preserved."
+          }
+        }
+      }
+    },
+    "全ファイルを一括事前解読": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pre-decrypt All Files"
+          }
+        }
+      }
+    },
+    "全ファイル消滅まであと": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time Until All Files Destroyed"
+          }
+        }
+      }
+    },
+    "全ファイル消滅まで残り": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time Until All Files Destroyed"
+          }
+        }
+      }
+    },
+    "共有シートはMacではサポートされていません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share sheet is not supported on Mac"
+          }
+        }
+      }
+    },
+    "写真": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos"
+          }
+        }
+      }
+    },
+    "写真/動画": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos/Videos"
+          }
+        }
+      }
+    },
+    "写真/動画を追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Photos/Videos"
+          }
+        }
+      }
+    },
+    "分": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Min"
+          }
+        }
+      }
+    },
+    "初期化を実行": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Execute Initialization"
+          }
+        }
+      }
+    },
+    "初期設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Initial Setup"
+          }
+        }
+      }
+    },
+    "削除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "削除の確認": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm Deletion"
+          }
+        }
+      }
+    },
+    "動画": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Videos"
+          }
+        }
+      }
+    },
+    "受信(受け取る)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receive"
+          }
+        }
+      }
+    },
+    "受信中... %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receiving... %@"
+          }
+        }
+      }
+    },
+    "受信中... %@ / %@": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "new",
+            "value": "受信中... %1$@ / %2$@"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通知設定を保存しました"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receiving... %1$@ / %2$@"
           }
         }
       }
     },
-    "選択" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select"
+    "受信完了!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reception Complete!"
           }
         }
       }
     },
-    "選択したファイルを完全に削除しますか？" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permanently delete selected files?"
+    "名前": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
           }
         }
       }
     },
-    "閉じる" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
+    "名前を変更": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename"
           }
         }
       }
     },
-    "開く" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open"
+    "変更": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change"
+          }
+        }
+      }
+    },
+    "待機": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wait"
+          }
+        }
+      }
+    },
+    "待機ID: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting ID: %@"
+          }
+        }
+      }
+    },
+    "復号中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypting..."
+          }
+        }
+      }
+    },
+    "戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "指定可能な範囲: 1分前 〜 %@前": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selectable range: 1 min before - %@ before"
+          }
+        }
+      }
+    },
+    "接続": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect"
+          }
+        }
+      }
+    },
+    "接続完了。ファイルを受信できます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected. Ready to receive files."
+          }
+        }
+      }
+    },
+    "操作": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controls"
+          }
+        }
+      }
+    },
+    "数字4桁": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4 digits"
+          }
+        }
+      }
+    },
+    "新しいパスコード(4桁)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Passcode (4 digits)"
+          }
+        }
+      }
+    },
+    "新規フォルダ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Folder"
+          }
+        }
+      }
+    },
+    "日": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days"
+          }
+        }
+      }
+    },
+    "時間": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hours"
+          }
+        }
+      }
+    },
+    "書き出し": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export"
+          }
+        }
+      }
+    },
+    "書き出しの準備ができました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to export"
+          }
+        }
+      }
+    },
+    "未分類": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unclassified"
+          }
+        }
+      }
+    },
+    "未分類に戻す": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to Unclassified"
+          }
+        }
+      }
+    },
+    "未分類のファイルがありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No unclassified files"
+          }
+        }
+      }
+    },
+    "検索": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        }
+      }
+    },
+    "極秘データの追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Top Secret Data"
+          }
+        }
+      }
+    },
+    "極秘処理中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing secret data..."
+          }
+        }
+      }
+    },
+    "極秘処理中...\n（そのままお待ちください）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing secret data...\n(Please wait)"
+          }
+        }
+      }
+    },
+    "極秘処理中... (%lld/%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing secret data... (%lld/%lld)"
+          }
+        }
+      }
+    },
+    "次へ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "準備中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing..."
+          }
+        }
+      }
+    },
+    "生体認証でロック解除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with Biometrics"
+          }
+        }
+      }
+    },
+    "生体認証に戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to Biometrics"
+          }
+        }
+      }
+    },
+    "画像・動画・PDF・その他のファイルに対応": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supports photos, videos, PDFs, and other files"
+          }
+        }
+      }
+    },
+    "相手の接続を待機中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for peer to connect..."
+          }
+        }
+      }
+    },
+    "相手の端末ID": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peer Device ID"
+          }
+        }
+      }
+    },
+    "相手の端末に接続中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting to peer device..."
+          }
+        }
+      }
+    },
+    "確認のためもう一度": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm Passcode"
+          }
+        }
+      }
+    },
+    "移動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move"
+          }
+        }
+      }
+    },
+    "移動先を選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select Destination"
+          }
+        }
+      }
+    },
+    "種別": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
+          }
+        }
+      }
+    },
+    "端末ID": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device ID"
+          }
+        }
+      }
+    },
+    "端末の名前 (例: 自分のiPhone)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device Name (e.g. My iPhone)"
+          }
+        }
+      }
+    },
+    "端末を保存": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Device"
+          }
+        }
+      }
+    },
+    "端末情報": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device Information"
+          }
+        }
+      }
+    },
+    "自爆タイマー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deadman Switch Timer"
+          }
+        }
+      }
+    },
+    "自爆タイマーの時間を超過したため、全データの消去プロセスが有効になりました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The deadman switch timer has expired. All data erasure process has been activated."
+          }
+        }
+      }
+    },
+    "自爆タイマー設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deadman Switch Settings"
+          }
+        }
+      }
+    },
+    "自爆タイマー警告": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deadman Switch Warning"
+          }
+        }
+      }
+    },
+    "自爆タイマー起動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deadman Switch Activated"
+          }
+        }
+      }
+    },
+    "自爆の通知": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deadman Switch Notifications"
+          }
+        }
+      }
+    },
+    "自爆の通知設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deadman Switch Notification Settings"
+          }
+        }
+      }
+    },
+    "表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View"
+          }
+        }
+      }
+    },
+    "解読": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypt"
+          }
+        }
+      }
+    },
+    "解読中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypting..."
+          }
+        }
+      }
+    },
+    "解読中... (%lld/%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypting... (%1$lld/%2$lld)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "new",
+            "value": "解読中... (%1$lld/%2$lld)"
+          }
+        }
+      }
+    },
+    "解読中... (0/%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypting... (0/%lld)"
+          }
+        }
+      }
+    },
+    "解除する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
+          }
+        }
+      }
+    },
+    "設定": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "設定された自爆タイマーの期限が近づいています。アプリを開いてタイマーをリセットしてください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The deadman switch timer is approaching its expiration. Please open the app to reset the timer."
+          }
+        }
+      }
+    },
+    "設定した期間アプリを開かなかった場合、\nすべての極秘データが自動的に消去されます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If the app is not opened for the set period, all top-secret data will be automatically erased."
+          }
+        }
+      }
+    },
+    "設定を完了": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete Setup"
+          }
+        }
+      }
+    },
+    "認証してください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please authenticate"
+          }
+        }
+      }
+    },
+    "認証失敗 (%lld/3)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication failed (%lld/3)"
+          }
+        }
+      }
+    },
+    "読み込み待機中またはエラー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting to load or error"
+          }
+        }
+      }
+    },
+    "追加日": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date Added"
+          }
+        }
+      }
+    },
+    "送信": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
+    "送信(送る)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
+    "送信するファイルを選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select file to send"
+          }
+        }
+      }
+    },
+    "送信中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sending..."
+          }
+        }
+      }
+    },
+    "送信完了!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sending Complete!"
+          }
+        }
+      }
+    },
+    "通知タイミング (自爆までの残り時間)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification timing (Time remaining)"
+          }
+        }
+      }
+    },
+    "通知設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification Settings"
+          }
+        }
+      }
+    },
+    "通知設定を保存しました": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification settings saved"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知設定を保存しました"
+          }
+        }
+      }
+    },
+    "選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select"
+          }
+        }
+      }
+    },
+    "選択したファイルを完全に削除しますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permanently delete selected files?"
+          }
+        }
+      }
+    },
+    "閉じる": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "開く": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }
