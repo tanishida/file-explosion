@@ -65,6 +65,7 @@ struct ContentView: View {
     @State var showPasscodeEntry = false
     @State var showingPasscodeSetup = false
     @State var showingFileTransfer = false
+    @State var pendingTransferFile: SecretFile? = nil
     @State var isFirstSetupMode = false
     @State var showingTimerSetup = false
     @State var showingNotificationSetup = false
@@ -202,11 +203,15 @@ struct ContentView: View {
 #if os(iOS)
             .fullScreenCover(isPresented: $showingTimerSetup) { TimerSetupView() }
             .fullScreenCover(isPresented: $showingNotificationSetup) { NotificationSetupView() }
-            .fullScreenCover(isPresented: $showingFileTransfer) { FileTransferView() }
+            .fullScreenCover(isPresented: $showingFileTransfer) {
+                FileTransferView(selectedFile: $pendingTransferFile)
+            }
 #else
             .sheet(isPresented: $showingTimerSetup) { TimerSetupView() }
             .sheet(isPresented: $showingNotificationSetup) { NotificationSetupView() }
-            .sheet(isPresented: $showingFileTransfer) { FileTransferView() }
+            .sheet(isPresented: $showingFileTransfer) {
+                FileTransferView(selectedFile: $pendingTransferFile)
+            }
 #endif
             .alert(folderAlertMode == .create ? "新規フォルダ" : "名前を変更", isPresented: $showingFolderAlert) {
                 TextField("フォルダ名", text: $editingFolderName)
@@ -321,6 +326,10 @@ extension ContentView {
                 try? FileManager.default.removeItem(at: targetFile.url)
                 try? FileManager.default.removeItem(at: FileManagerHelper.getCacheURL(for: targetFile))
                 saveFolders(); refreshFiles(); adjustGalleryIndexAfterRemoval()
+            },
+            onSend: { targetFile in
+                pendingTransferFile = targetFile
+                showingFileTransfer = true
             }
         )
         .toolbar(.hidden)
@@ -466,6 +475,7 @@ extension ContentView {
         showPasscodeEntry = false; inputPasscode = ""; faceIDFailCount = 0
         statusMessage = "認証してください"
         selectedAppFolderID = nil; showingFavoritesOnly = false; showingGallery = false
+        showingFileTransfer = false; pendingTransferFile = nil
         macShowHome = true
     }
     

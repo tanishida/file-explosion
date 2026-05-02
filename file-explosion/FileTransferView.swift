@@ -23,6 +23,7 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
     @Published var isSending: Bool = false
     @Published var sendProgress: Double = 0.0
     @Published var errorMessage: String?
+    @Published var isWaitingForPeer: Bool = false
     
     private var signalingManager: SignalingManager?
     private var webrtcManager: WebRTCManager?
@@ -69,12 +70,14 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
     func joinRoom() {
         guard !roomId.isEmpty else { return }
         self.errorMessage = nil
+        self.isWaitingForPeer = true
         signalingManager?.joinRoom(roomId: roomId)
     }
     
     func joinRoomAndOffer() {
         guard !roomId.isEmpty else { return }
         self.errorMessage = nil
+        self.isWaitingForPeer = true
         signalingManager?.joinRoom(roomId: roomId)
         
         // As the initiator (Receiver side connecting to Sender side), create offer shortly after joining
@@ -125,6 +128,9 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
         DispatchQueue.main.async {
             self.connectionState = state
             self.isConnected = (state == .connected || state == .completed)
+            if self.isConnected || state == .failed || state == .disconnected || state == .closed {
+                self.isWaitingForPeer = false
+            }
         }
     }
     
@@ -288,7 +294,7 @@ struct FileTransferView: View {
     @State private var showFilePicker = false
     @State private var showAddDeviceSheet = false
     @State private var transferMode: TransferMode = .send
-    @State private var selectedFile: SecretFile?
+    @Binding var selectedFile: SecretFile?
     
     enum TransferMode {
         case send
@@ -358,7 +364,7 @@ struct FileTransferView: View {
                                 viewModel.joinRoom()
                             }
                             .buttonStyle(.borderedProminent)
-                            .disabled(viewModel.roomId.isEmpty || viewModel.isConnected)
+                            .disabled(viewModel.roomId.isEmpty || viewModel.isConnected || viewModel.isWaitingForPeer)
                         }
                         
                         Text("2. 相手が接続したらファイルを選択")
@@ -408,8 +414,19 @@ struct FileTransferView: View {
                             .background(selectedFile == nil ? Color.gray : Color.blue)
                             .cornerRadius(10)
                             .disabled(selectedFile == nil || viewModel.isSending)
+                        } else if viewModel.isWaitingForPeer {
+                            HStack {
+                                ProgressView()
+                                    .padding(.trailing, 8)
+                                Text("相手の接続を待機中...")
+                                    .foregroundColor(.blue)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(8)
                         } else {
-                            Text("未接続...")
+                            Text("「待機」ボタンを押して接続をお待ちください")
                                 .foregroundColor(.secondary)
                         }
                         
@@ -429,6 +446,11 @@ struct FileTransferView: View {
                     .background(Color(UIColor.secondarySystemBackground))
                     .cornerRadius(12)
                     .padding(.horizontal)
+                    .onChange(of: viewModel.sendProgress) { _ in
+                        if viewModel.sendProgress == 1.0 {
+                            selectedFile = nil
+                        }
+                    }
                 } else {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("1. 相手の端末を選択して接続")
@@ -464,7 +486,7 @@ struct FileTransferView: View {
                                 viewModel.joinRoomAndOffer()
                             }
                             .buttonStyle(.borderedProminent)
-                            .disabled(viewModel.roomId.isEmpty || viewModel.isConnected)
+                            .disabled(viewModel.roomId.isEmpty || viewModel.isConnected || viewModel.isWaitingForPeer)
                         }
                         
                         Button("+ 端末IDを新しく保存する") {
@@ -477,8 +499,19 @@ struct FileTransferView: View {
                         if viewModel.isConnected {
                             Text("接続完了。ファイルを受信できます。")
                                 .foregroundColor(.green)
+                        } else if viewModel.isWaitingForPeer {
+                            HStack {
+                                ProgressView()
+                                    .padding(.trailing, 8)
+                                Text("相手の端末に接続中...")
+                                    .foregroundColor(.blue)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(8)
                         } else {
-                            Text("未接続...")
+                            Text("「接続」ボタンを押してください")
                                 .foregroundColor(.secondary)
                         }
                         

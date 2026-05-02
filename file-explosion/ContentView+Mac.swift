@@ -1014,6 +1014,12 @@ extension ContentView {
         Button { selectedFileIDs = [file.id]; showingMoveDialog = true } label: {
             Label("移動", systemImage: "folder")
         }
+        Button {
+            pendingTransferFile = file
+            showingFileTransfer = true
+        } label: {
+            Label("このファイルを送信する", systemImage: "paperplane.fill")
+        }
         Button { selectedFileIDs = [file.id]; exportSelectedFiles() } label: {
             Label("書き出し", systemImage: "square.and.arrow.up")
         }

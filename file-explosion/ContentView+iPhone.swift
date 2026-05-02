@@ -381,6 +381,12 @@ extension ContentView {
                             .contextMenu {
                                 if !isSelectionMode {
                                     Button(action: {
+                                        pendingTransferFile = file
+                                        showingFileTransfer = true
+                                    }) {
+                                        Label("このファイルを送信する", systemImage: "paperplane.fill")
+                                    }
+                                    Button(action: {
                                         selectedFileIDs = [file.id]
                                         exportSelectedFiles()
                                     }) {

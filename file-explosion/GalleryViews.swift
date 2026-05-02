@@ -308,6 +308,7 @@ struct GalleryView: View {
     var onToggleFavorite: (SecretFile) -> Void
     var onMove: (SecretFile, AppFolder?) -> Void
     var onDelete: (SecretFile) -> Void
+    var onSend: (SecretFile) -> Void
     
     @Environment(\.dismiss) private var dismiss
     
@@ -480,6 +481,16 @@ struct GalleryView: View {
                 Image(systemName: "square.and.arrow.up")
                     .font(.title2)
                     .foregroundColor(.white)
+            }
+            
+            Button {
+                guard files.indices.contains(currentIndex) else { return }
+                dismiss() // ギャラリーを閉じて送る画面へ
+                onSend(files[currentIndex])
+            } label: {
+                Image(systemName: "paperplane.fill")
+                    .font(.title2)
+                    .foregroundColor(.blue)
             }
             
             Button {
