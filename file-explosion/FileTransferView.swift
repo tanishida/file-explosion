@@ -302,6 +302,7 @@ struct FileTransferView: View {
     }
     
     @State private var transferMode: TransferMode = .send
+    @State private var isPreparingToSend: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -397,14 +398,24 @@ struct FileTransferView: View {
                                 .padding(.vertical, 4)
                             }
                             
-                            Button("送信") {
+                            Button(isPreparingToSend ? "準備中..." : "送信") {
                                 if let file = selectedFile {
-                                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "." + file.fileExtension)
-                                    if KeyManager.decryptFile(inputURL: file.url, outputURL: tempURL) {
-                                        viewModel.sendFile(url: tempURL)
-                                        // 念の為少し遅延させてから削除（またはViewModel内でdata化した後に削除する方が安全）
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                            try? FileManager.default.removeItem(at: tempURL)
+                                    isPreparingToSend = true
+                                    DispatchQueue.global(qos: .userInitiated).async {
+                                        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "." + file.fileExtension)
+                                        if KeyManager.decryptFile(inputURL: file.url, outputURL: tempURL) {
+                                            DispatchQueue.main.async {
+                                                viewModel.sendFile(url: tempURL)
+                                                isPreparingToSend = false
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                                    try? FileManager.default.removeItem(at: tempURL)
+                                                }
+                                            }
+                                        } else {
+                                            DispatchQueue.main.async {
+                                                isPreparingToSend = false
+                                                viewModel.errorMessage = "ファイルの復号に失敗しました"
+                                            }
                                         }
                                     }
                                 }
@@ -415,7 +426,7 @@ struct FileTransferView: View {
                             .frame(maxWidth: .infinity)
                             .background(selectedFile == nil ? Color.gray : Color.blue)
                             .cornerRadius(10)
-                            .disabled(selectedFile == nil || viewModel.isSending)
+                            .disabled(selectedFile == nil || viewModel.isSending || isPreparingToSend)
                         } else if viewModel.isWaitingForPeer {
                             HStack {
                                 ProgressView()
