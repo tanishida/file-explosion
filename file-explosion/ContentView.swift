@@ -477,6 +477,17 @@ extension ContentView {
         selectedAppFolderID = nil; showingFavoritesOnly = false; showingGallery = false
         showingFileTransfer = false; pendingTransferFile = nil
         macShowHome = true
+        
+        // ダイアログ・シート類をすべて閉じる
+        showingFolderAlert = false
+        showingMoveDialog = false
+        showFileImporter = false
+        showingResetConfirmation = false
+        showingMultiDeleteConfirm = false
+        showShareSheet = false
+        showingPasscodeSetup = false
+        showingTimerSetup = false
+        showingNotificationSetup = false
     }
     
     func refreshFiles() { secretFiles = FileManagerHelper.getAllSecretFiles() }

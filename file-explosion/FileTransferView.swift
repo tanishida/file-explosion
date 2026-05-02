@@ -293,13 +293,15 @@ struct FileTransferView: View {
     @StateObject private var deviceManager = DeviceManager.shared
     @State private var showFilePicker = false
     @State private var showAddDeviceSheet = false
-    @State private var transferMode: TransferMode = .send
     @Binding var selectedFile: SecretFile?
+    @Environment(\.scenePhase) var scenePhase
     
     enum TransferMode {
         case send
         case receive
     }
+    
+    @State private var transferMode: TransferMode = .send
     
     var body: some View {
         NavigationStack {
@@ -587,6 +589,12 @@ struct FileTransferView: View {
 #endif
             .onAppear {
                 viewModel.startSignaling()
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background || phase == .inactive {
+                showFilePicker = false
+                showAddDeviceSheet = false
             }
         }
         .sheet(isPresented: $showFilePicker) {
