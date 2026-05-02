@@ -5,8 +5,7 @@ import CryptoKit
 class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegate, WebRTCManagerDelegate {
     func signalingManagerDidReceiveJoin(_ manager: SignalingManager) {
         // Only automatically create an offer if we are the Sender waiting for someone else to connect.
-        // Or, we can let UI drive it explicitly. For now, if we receive join, create offer if we don't have one.
-        // A better robust way:
+        // Wait, NO, we decided only the Receiver creates an offer to prevent glare.
     }
     
     func signalingManagerDidDisconnect(_ manager: SignalingManager) {
@@ -171,15 +170,18 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
                 try finalData.write(to: tempUrl)
                 
                 KeyManager.createAndSaveKey()
-                _ = KeyManager.encryptFile(inputURL: tempUrl, outputURL: newSecureURL)
+                let success = KeyManager.encryptFile(inputURL: tempUrl, outputURL: newSecureURL)
                 try? FileManager.default.removeItem(at: tempUrl)
                 
-                self.receivedFileUrl = newSecureURL
-                
-                // Fire a notification to ContentView that files changed
-                NotificationCenter.default.post(name: Notification.Name("P2PFileReceived"), object: nil)
+                if success {
+                    self.receivedFileUrl = newSecureURL
+                    NotificationCenter.default.post(name: Notification.Name("P2PFileReceived"), object: nil)
+                } else {
+                    self.errorMessage = "ファイルの保存(暗号化)に失敗しました"
+                }
             } catch {
                 print("Failed to reassemble or decrypt: \(error)")
+                self.errorMessage = "データの復号に失敗しました: \(error.localizedDescription)"
             }
         }
         self.receivedChunks.removeAll()
@@ -223,20 +225,35 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
                 ]
                 if let metaJSON = try? JSONSerialization.data(withJSONObject: metadata),
                    let metaString = String(data: metaJSON, encoding: .utf8) {
-                    webrtcManager.sendMessage(metaString)
+                    var success = false
+                    while !success {
+                        if self.connectionState != .connected && self.connectionState != .completed {
+                            throw NSError(domain: "WebRTC", code: 1, userInfo: [NSLocalizedDescriptionKey: "Connection lost"])
+                        }
+                        success = webrtcManager.sendMessage(metaString)
+                        if !success { Thread.sleep(forTimeInterval: 0.1) }
+                    }
                 }
                 
                 var sentSize = 0
                 for chunk in chunks {
-                    // Throttle if the DataChannel buffer gets too large (e.g. > 1MB)
-                    while webrtcManager.bufferedAmount > 1024 * 1024 {
+                    // Throttle if the DataChannel buffer gets too large (e.g. > 16KB)
+                    while webrtcManager.bufferedAmount > 16384 * 4 {
                         Thread.sleep(forTimeInterval: 0.05)
                         if self.connectionState != .connected && self.connectionState != .completed {
                             throw NSError(domain: "WebRTC", code: 1, userInfo: [NSLocalizedDescriptionKey: "Connection lost"])
                         }
                     }
                     
-                    webrtcManager.sendData(chunk)
+                    var chunkSuccess = false
+                    while !chunkSuccess {
+                        if self.connectionState != .connected && self.connectionState != .completed {
+                            throw NSError(domain: "WebRTC", code: 1, userInfo: [NSLocalizedDescriptionKey: "Connection lost"])
+                        }
+                        chunkSuccess = webrtcManager.sendData(chunk)
+                        if !chunkSuccess { Thread.sleep(forTimeInterval: 0.05) }
+                    }
+                    
                     sentSize += chunk.count
                     let progress = Double(sentSize) / Double(totalSize)
                     DispatchQueue.main.async {
@@ -264,6 +281,7 @@ struct FileTransferView: View {
     @StateObject private var viewModel = FileTransferViewModel()
     @State private var showFilePicker = false
     @State private var transferMode: TransferMode = .send
+    @State private var selectedFile: SecretFile?
     
     enum TransferMode {
         case send
@@ -296,15 +314,51 @@ struct FileTransferView: View {
                         
                         Text("2. 相手が接続したらファイルを選択")
                         if viewModel.isConnected {
-                            Button("ファイルを送信") {
-                                showFilePicker = true
+                            HStack {
+                                Button("ファイルを選択") {
+                                    showFilePicker = true
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                            
+                            if let file = selectedFile {
+                                HStack(spacing: 12) {
+                                    FileThumbnailView(file: file) {}
+                                        .frame(width: 50, height: 50)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(file.displayName)
+                                            .font(.subheadline)
+                                            .lineLimit(1)
+                                            .truncationMode(.middle)
+                                        Text(file.fileSizeLabel)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
+                            
+                            Button("送信") {
+                                if let file = selectedFile {
+                                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "." + file.fileExtension)
+                                    if KeyManager.decryptFile(inputURL: file.url, outputURL: tempURL) {
+                                        viewModel.sendFile(url: tempURL)
+                                        // 念の為少し遅延させてから削除（またはViewModel内でdata化した後に削除する方が安全）
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                            try? FileManager.default.removeItem(at: tempURL)
+                                        }
+                                    }
+                                }
                             }
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.blue)
+                            .background(selectedFile == nil ? Color.gray : Color.blue)
                             .cornerRadius(10)
+                            .disabled(selectedFile == nil || viewModel.isSending)
                         } else {
                             Text("未接続...")
                                 .foregroundColor(.secondary)
@@ -365,12 +419,23 @@ struct FileTransferView: View {
                         }
                         
                         if let receivedUrl = viewModel.receivedFileUrl {
-                            Text("受信完了!")
-                                .foregroundColor(.green)
-                            Text("アプリ内に保存されました:")
-                                .font(.caption)
-                            Text(viewModel.receivedFileName)
-                                .font(.caption)
+                            VStack(spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.green)
+                                Text("受信完了!")
+                                    .font(.headline)
+                                    .foregroundColor(.green)
+                                Text("アプリ内に保存されました:")
+                                    .font(.caption)
+                                Text(viewModel.receivedFileName)
+                                    .font(.caption)
+                                    .bold()
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.green.opacity(0.1))
+                            .cornerRadius(10)
                         }
                     }
                     .padding()
@@ -413,12 +478,8 @@ struct FileTransferView: View {
             }
         }
         .sheet(isPresented: $showFilePicker) {
-            SecretFilePickerView { selectedFile in
-                let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "." + selectedFile.fileExtension)
-                if KeyManager.decryptFile(inputURL: selectedFile.url, outputURL: tempURL) {
-                    viewModel.sendFile(url: tempURL)
-                    try? FileManager.default.removeItem(at: tempURL)
-                }
+            SecretFilePickerView { file in
+                self.selectedFile = file
             }
         }
     }

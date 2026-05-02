@@ -40,8 +40,6 @@ class WebRTCManager: NSObject {
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
         
         self.peerConnection = peerConnectionFactory.peerConnection(with: config, constraints: constraints, delegate: self)
-        
-        self.setupDataChannel()
     }
     
     private func setupDataChannel() {
@@ -55,6 +53,7 @@ class WebRTCManager: NSObject {
     }
     
     func createOffer() {
+        self.setupDataChannel()
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
         self.peerConnection?.offer(for: constraints) { [weak self] (description, error) in
             guard let self = self, let sdp = description else { return }
@@ -93,24 +92,26 @@ class WebRTCManager: NSObject {
         return self.dataChannel?.bufferedAmount ?? 0
     }
     
-    func sendData(_ data: Data) {
+    func sendData(_ data: Data) -> Bool {
         guard let dataChannel = self.dataChannel, dataChannel.readyState == .open else {
             print("DataChannel is not open")
-            return
+            return false
         }
         let buffer = RTCDataBuffer(data: data, isBinary: true)
         let success = dataChannel.sendData(buffer)
         if !success {
             print("Failed to send data over DataChannel")
         }
+        return success
     }
     
-    func sendMessage(_ text: String) {
-        guard let dataChannel = self.dataChannel, dataChannel.readyState == .open else { return }
+    func sendMessage(_ text: String) -> Bool {
+        guard let dataChannel = self.dataChannel, dataChannel.readyState == .open else { return false }
         if let data = text.data(using: .utf8) {
             let buffer = RTCDataBuffer(data: data, isBinary: false)
-            dataChannel.sendData(buffer)
+            return dataChannel.sendData(buffer)
         }
+        return false
     }
 }
 
@@ -146,11 +147,13 @@ extension WebRTCManager: RTCDataChannelDelegate {
     }
     
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
+        print("DataChannel received message, isBinary: \(buffer.isBinary), length: \(buffer.data.count)")
         DispatchQueue.main.async {
             if buffer.isBinary {
                 self.delegate?.webRTCManager(self, didReceiveData: buffer.data)
             } else {
                 if let str = String(data: buffer.data, encoding: .utf8) {
+                    print("DataChannel received text: \(str)")
                     self.delegate?.webRTCManager(self, didReceiveMessage: str)
                 }
             }

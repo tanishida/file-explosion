@@ -165,6 +165,9 @@ struct ContentView: View {
                 updateNotificationSchedule()
                 showToast(String(localized: "通知設定を保存しました"))
             }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("P2PFileReceived"))) { _ in
+                refreshFiles()
+            }
     }
     
     private var bodyContent: some View {

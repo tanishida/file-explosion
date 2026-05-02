@@ -4,9 +4,9 @@ import CryptoKit
 class SecureFileManager {
     private var secureKeyManager: SecureKeyManager
     
-    // WebRTCのDataChannelでの送信に適したサイズ (例: 64KB = 65536)
+    // WebRTCのDataChannelでの送信に適したサイズ (例: 16KB = 16384)
     // 実際の利用では送信パケットサイズの上限を考慮して設定します
-    private let chunkSize = 65536 
+    private let chunkSize = 16384 
     
     init(keyManager: SecureKeyManager) {
         self.secureKeyManager = keyManager
