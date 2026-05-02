@@ -228,12 +228,6 @@ extension ContentView {
                         ) { showFileImporter = true }
                         
                         macActionButton(
-                            label: "一括事前解読",
-                            icon: "bolt.fill",
-                            color: .orange
-                        ) { batchDecryptAll() }
-                        
-                        macActionButton(
                             label: "デバイス間転送 (P2P)",
                             icon: "paperplane.fill",
                             color: .purple
@@ -676,9 +670,6 @@ extension ContentView {
                     Label("ファイルを追加", systemImage: "doc.badge.plus")
                 }
                 Divider()
-                Button { batchDecryptAll() } label: {
-                    Label("一括事前解読", systemImage: "bolt.fill")
-                }
                 Button { decryptCurrentFolderFiles() } label: {
                     Label("フォルダ内を全て書き出し", systemImage: "lock.open.fill")
                 }

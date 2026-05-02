@@ -741,6 +741,7 @@
       }
     },
     "パフォーマンス" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -868,6 +869,7 @@
       }
     },
     "一括事前解読" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -878,6 +880,7 @@
       }
     },
     "一括解読中... (%lld/%lld)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -888,6 +891,7 @@
       }
     },
     "一括解読中... (0/%lld)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -984,6 +988,7 @@
       }
     },
     "全ファイルを一括事前解読" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1116,11 +1121,18 @@
     "受信(受け取る)" : {
 
     },
-    "受信中..." : {
+    "受信中... %@" : {
 
     },
-    "受信中... %lld bytes" : {
-
+    "受信中... %@ / %@" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "受信中... %1$@ / %2$@"
+          }
+        }
+      }
     },
     "受信完了!" : {
 

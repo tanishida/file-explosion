@@ -523,20 +523,6 @@ extension ContentView {
         )
     }
     
-    func batchDecryptAll() {
-        let targets = secretFiles.filter { !FileManager.default.fileExists(atPath: FileManagerHelper.getCacheURL(for: $0).path) }
-        if targets.isEmpty { return }
-        isProcessing = true; var count = 0
-        processingMessage = "一括解読中... (0/\(targets.count))"
-        DispatchQueue.global(qos: .userInitiated).async {
-            for file in targets {
-                autoreleasepool { _ = KeyManager.decryptFile(inputURL: file.url, outputURL: FileManagerHelper.getCacheURL(for: file)) }
-                DispatchQueue.main.async { count += 1; processingMessage = "一括解読中... (\(count)/\(targets.count))" }
-            }
-            DispatchQueue.main.async { isProcessing = false; refreshFiles() }
-        }
-    }
-    
     func processSelectedPhotos() {
         guard !selectedItems.isEmpty else { return }
         isProcessing = true; processingMessage = "極秘処理中...\n（そのままお待ちください）"

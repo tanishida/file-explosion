@@ -132,14 +132,6 @@ extension ContentView {
                 }
                 .padding(.horizontal)
                 
-                SectionHeader(title: "パフォーマンス")
-                Button(action: { batchDecryptAll() }) {
-                    Label("全ファイルを一括事前解読", systemImage: "bolt.fill")
-                        .frame(maxWidth: .infinity).padding()
-                        .background(Color.blue).foregroundColor(.white).cornerRadius(10)
-                }
-                .padding(.horizontal)
-                
                 SectionHeader(title: "極秘データの追加")
                 HStack(spacing: 15) {
                     PhotosPicker(

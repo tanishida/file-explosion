@@ -590,18 +590,16 @@ struct FileTransferView: View {
                         }
                         
                         if viewModel.isReceiving {
-                            ProgressView("受信中... \(viewModel.receivedDataSize) bytes")
-                        }
-                        
-                        if viewModel.isReceiving && viewModel.totalDataSize > 0 {
-                            ProgressView("受信中...", value: Double(viewModel.receivedDataSize), total: Double(viewModel.totalDataSize))
-                                .progressViewStyle(.linear)
-                                .padding(.top, 8)
-                            Text("\(Int((Double(viewModel.receivedDataSize) / Double(viewModel.totalDataSize)) * 100))%")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        } else if viewModel.isReceiving {
-                            ProgressView("受信中... \(viewModel.receivedDataSize) bytes")
+                            if viewModel.totalDataSize > 0 {
+                                ProgressView("受信中... \(formatBytes(viewModel.receivedDataSize)) / \(formatBytes(viewModel.totalDataSize))", value: Double(viewModel.receivedDataSize), total: Double(viewModel.totalDataSize))
+                                    .progressViewStyle(.linear)
+                                    .padding(.top, 8)
+                                Text("\(Int((Double(viewModel.receivedDataSize) / Double(viewModel.totalDataSize)) * 100))%")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                ProgressView("受信中... \(formatBytes(viewModel.receivedDataSize))")
+                            }
                         }
                         
                         if let receivedUrl = viewModel.receivedFileUrl {
@@ -677,6 +675,13 @@ struct FileTransferView: View {
         .sheet(isPresented: $showAddDeviceSheet) {
             AddDeviceView()
         }
+    }
+    
+    private func formatBytes(_ bytes: Int) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: Int64(bytes))
     }
     
     func stateString(_ state: RTCIceConnectionState) -> String {
