@@ -64,6 +64,8 @@ struct ContentView: View {
     @State var faceIDFailCount = 0
     @State var showPasscodeEntry = false
     @State var showingPasscodeSetup = false
+    @State var showingFileTransfer = false
+    @State var pendingTransferFile: SecretFile? = nil
     @State var isFirstSetupMode = false
     @State var showingTimerSetup = false
     @State var showingNotificationSetup = false
@@ -164,6 +166,9 @@ struct ContentView: View {
                 updateNotificationSchedule()
                 showToast(String(localized: "通知設定を保存しました"))
             }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("P2PFileReceived"))) { _ in
+                refreshFiles()
+            }
     }
     
     private var bodyContent: some View {
@@ -198,9 +203,15 @@ struct ContentView: View {
 #if os(iOS)
             .fullScreenCover(isPresented: $showingTimerSetup) { TimerSetupView() }
             .fullScreenCover(isPresented: $showingNotificationSetup) { NotificationSetupView() }
+            .fullScreenCover(isPresented: $showingFileTransfer) {
+                FileTransferView(selectedFile: $pendingTransferFile)
+            }
 #else
             .sheet(isPresented: $showingTimerSetup) { TimerSetupView() }
             .sheet(isPresented: $showingNotificationSetup) { NotificationSetupView() }
+            .sheet(isPresented: $showingFileTransfer) {
+                FileTransferView(selectedFile: $pendingTransferFile)
+            }
 #endif
             .alert(folderAlertMode == .create ? "新規フォルダ" : "名前を変更", isPresented: $showingFolderAlert) {
                 TextField("フォルダ名", text: $editingFolderName)
@@ -315,6 +326,10 @@ extension ContentView {
                 try? FileManager.default.removeItem(at: targetFile.url)
                 try? FileManager.default.removeItem(at: FileManagerHelper.getCacheURL(for: targetFile))
                 saveFolders(); refreshFiles(); adjustGalleryIndexAfterRemoval()
+            },
+            onSend: { targetFile in
+                pendingTransferFile = targetFile
+                showingFileTransfer = true
             }
         )
         .toolbar(.hidden)
@@ -460,7 +475,19 @@ extension ContentView {
         showPasscodeEntry = false; inputPasscode = ""; faceIDFailCount = 0
         statusMessage = "認証してください"
         selectedAppFolderID = nil; showingFavoritesOnly = false; showingGallery = false
+        showingFileTransfer = false; pendingTransferFile = nil
         macShowHome = true
+        
+        // ダイアログ・シート類をすべて閉じる
+        showingFolderAlert = false
+        showingMoveDialog = false
+        showFileImporter = false
+        showingResetConfirmation = false
+        showingMultiDeleteConfirm = false
+        showShareSheet = false
+        showingPasscodeSetup = false
+        showingTimerSetup = false
+        showingNotificationSetup = false
     }
     
     func refreshFiles() { secretFiles = FileManagerHelper.getAllSecretFiles() }
@@ -494,20 +521,6 @@ extension ContentView {
             enabled: isEnabled,
             threshold: threshold
         )
-    }
-    
-    func batchDecryptAll() {
-        let targets = secretFiles.filter { !FileManager.default.fileExists(atPath: FileManagerHelper.getCacheURL(for: $0).path) }
-        if targets.isEmpty { return }
-        isProcessing = true; var count = 0
-        processingMessage = "一括解読中... (0/\(targets.count))"
-        DispatchQueue.global(qos: .userInitiated).async {
-            for file in targets {
-                autoreleasepool { _ = KeyManager.decryptFile(inputURL: file.url, outputURL: FileManagerHelper.getCacheURL(for: file)) }
-                DispatchQueue.main.async { count += 1; processingMessage = "一括解読中... (\(count)/\(targets.count))" }
-            }
-            DispatchQueue.main.async { isProcessing = false; refreshFiles() }
-        }
     }
     
     func processSelectedPhotos() {

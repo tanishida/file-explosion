@@ -4,6 +4,16 @@
 <dict>
 	<key>CFBundleGetInfoString</key>
 	<string>Privacy - Photo Library Usage Description</string>
+	<key>CFBundleSignature</key>
+	<string></string>
+	<key>SignalingServerURL</key>
+	<string>$(SIGNALING_SERVER_URL_VALUE)</string>
+	<key>TURN_SERVER_PASSWORD</key>
+	<string>super_secret_password_123</string>
+	<key>TURN_SERVER_URL</key>
+	<string>turn:163.44.112.9:3478</string>
+	<key>TURN_SERVER_USERNAME</key>
+	<string>limitbox</string>
 	<key>UIFileSharingEnabled</key>
 	<false/>
 </dict>

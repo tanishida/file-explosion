@@ -228,10 +228,10 @@ extension ContentView {
                         ) { showFileImporter = true }
                         
                         macActionButton(
-                            label: "一括事前解読",
-                            icon: "bolt.fill",
-                            color: .orange
-                        ) { batchDecryptAll() }
+                            label: "デバイス間転送 (P2P)",
+                            icon: "paperplane.fill",
+                            color: .purple
+                        ) { showingFileTransfer = true }
                         
                         macActionButton(
                             label: "パスコードを変更",
@@ -670,9 +670,6 @@ extension ContentView {
                     Label("ファイルを追加", systemImage: "doc.badge.plus")
                 }
                 Divider()
-                Button { batchDecryptAll() } label: {
-                    Label("一括事前解読", systemImage: "bolt.fill")
-                }
                 Button { decryptCurrentFolderFiles() } label: {
                     Label("フォルダ内を全て書き出し", systemImage: "lock.open.fill")
                 }
@@ -1007,6 +1004,12 @@ extension ContentView {
         }
         Button { selectedFileIDs = [file.id]; showingMoveDialog = true } label: {
             Label("移動", systemImage: "folder")
+        }
+        Button {
+            pendingTransferFile = file
+            showingFileTransfer = true
+        } label: {
+            Label("このファイルを送信する", systemImage: "paperplane.fill")
         }
         Button { selectedFileIDs = [file.id]; exportSelectedFiles() } label: {
             Label("書き出し", systemImage: "square.and.arrow.up")

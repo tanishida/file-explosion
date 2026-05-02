@@ -76,6 +76,28 @@
             ReferencedContainer = "container:file-explosion.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "SIGNALING_SERVER_URL"
+            value = "wss://xexk11ad2e.execute-api.ap-northeast-1.amazonaws.com/production/"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "TURN_SERVER_URL"
+            value = "turn:163.44.112.9:3478"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "TURN_SERVER_USERNAME"
+            value = "limitbox"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "TURN_SERVER_PASSWORD"
+            value = "super_secret_password_123"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

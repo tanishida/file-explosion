@@ -124,11 +124,11 @@ extension ContentView {
                 }
                 .padding(.horizontal)
                 
-                SectionHeader(title: "パフォーマンス")
-                Button(action: { batchDecryptAll() }) {
-                    Label("全ファイルを一括事前解読", systemImage: "bolt.fill")
+                SectionHeader(title: "データ共有")
+                Button(action: { showingFileTransfer = true }) {
+                    Label("デバイス間転送 (P2P)", systemImage: "paperplane.fill")
                         .frame(maxWidth: .infinity).padding()
-                        .background(Color.blue).foregroundColor(.white).cornerRadius(10)
+                        .background(Color.purple).foregroundColor(.white).cornerRadius(10)
                 }
                 .padding(.horizontal)
                 
@@ -372,6 +372,12 @@ extension ContentView {
                             }
                             .contextMenu {
                                 if !isSelectionMode {
+                                    Button(action: {
+                                        pendingTransferFile = file
+                                        showingFileTransfer = true
+                                    }) {
+                                        Label("このファイルを送信する", systemImage: "paperplane.fill")
+                                    }
                                     Button(action: {
                                         selectedFileIDs = [file.id]
                                         exportSelectedFiles()
