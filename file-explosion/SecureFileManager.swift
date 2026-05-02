@@ -6,10 +6,18 @@ class SecureFileManager {
     
     // WebRTCのDataChannelでの送信に適したサイズ (例: 16KB = 16384)
     // 実際の利用では送信パケットサイズの上限を考慮して設定します
-    private let chunkSize = 16384 
+    private let chunkSize = 16384
     
     init(keyManager: SecureKeyManager) {
         self.secureKeyManager = keyManager
+    }
+    
+    func encrypt(chunk: Data) throws -> Data {
+        return try secureKeyManager.encrypt(data: chunk)
+    }
+    
+    func decrypt(chunk: Data) throws -> Data {
+        return try secureKeyManager.decrypt(data: chunk)
     }
     
     /// ファイルを暗号化してチャンクに分割する

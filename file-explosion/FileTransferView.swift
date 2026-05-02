@@ -30,7 +30,12 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
     private var secureFileManager: SecureFileManager?
     private var secureKeyManager: SecureKeyManager?
     
-    private var receivedChunks: [Data] = []
+    private let receiveQueue = DispatchQueue(label: "com.limitbox.receiveQueue")
+    private var tempReceiveURL: URL?
+    private var receiveFileHandle: FileHandle?
+    private var internalReceivedDataSize: Int = 0
+    private var lastReceiveUIUpdateTime: TimeInterval = 0
+    private var finishReceiveWorkItem: DispatchWorkItem?
     
     override init() {
         self.roomId = DeviceManager.shared.myDeviceId
@@ -141,62 +146,92 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
             DispatchQueue.main.async {
                 self.totalDataSize = dict["totalSize"] as? Int ?? 0
                 self.receivedFileName = dict["fileName"] as? String ?? "received_file"
-                self.receivedChunks.removeAll()
+                self.receivedFileUrl = nil
                 self.receivedDataSize = 0
                 self.isReceiving = true
-                self.receivedFileUrl = nil
+            }
+            receiveQueue.async {
+                self.internalReceivedDataSize = 0
+                let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".dat")
+                self.tempReceiveURL = tempUrl
+                FileManager.default.createFile(atPath: tempUrl.path, contents: nil, attributes: nil)
+                self.receiveFileHandle = try? FileHandle(forWritingTo: tempUrl)
             }
         }
     }
     
     func webRTCManager(_ manager: WebRTCManager, didReceiveData data: Data) {
-        DispatchQueue.main.async {
-            self.isReceiving = true
-            self.receivedChunks.append(data)
-            self.receivedDataSize += data.count
+        receiveQueue.async {
+            guard let secureFileManager = self.secureFileManager,
+                  let fileHandle = self.receiveFileHandle else { return }
             
-            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.finishReceiving), object: nil)
-            
-            if self.totalDataSize > 0 && self.receivedDataSize >= self.totalDataSize {
-                self.finishReceiving()
-            } else {
-                self.perform(#selector(self.finishReceiving), with: nil, afterDelay: 3.0)
+            do {
+                let decrypted = try secureFileManager.decrypt(chunk: data)
+                try fileHandle.write(contentsOf: decrypted)
+                self.internalReceivedDataSize += decrypted.count
+                
+                let total = self.totalDataSize
+                let current = self.internalReceivedDataSize
+                let isComplete = total > 0 && current >= total
+                let now = Date().timeIntervalSince1970
+                
+                if now - self.lastReceiveUIUpdateTime > 0.1 || isComplete {
+                    self.lastReceiveUIUpdateTime = now
+                    
+                    DispatchQueue.main.async {
+                        self.isReceiving = true
+                        self.receivedDataSize = current
+                        self.finishReceiveWorkItem?.cancel()
+                        
+                        if isComplete {
+                            self.processFinishedReceive()
+                        } else {
+                            let workItem = DispatchWorkItem { [weak self] in
+                                self?.processFinishedReceive()
+                            }
+                            self.finishReceiveWorkItem = workItem
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0, execute: workItem)
+                        }
+                    }
+                }
+            } catch {
+                print("Failed to decrypt chunk: \(error)")
             }
         }
     }
     
-    @objc private func finishReceiving() {
+    private func processFinishedReceive() {
         self.isReceiving = false
         // Reassemble and decrypt
-        if let secureFileManager = self.secureFileManager {
-            do {
-                let finalData = try secureFileManager.reassembleAndDecrypt(chunks: self.receivedChunks)
+        receiveQueue.async {
+            try? self.receiveFileHandle?.close()
+            self.receiveFileHandle = nil
+            
+            guard let tempUrl = self.tempReceiveURL else { return }
+            self.tempReceiveURL = nil
+            self.internalReceivedDataSize = 0
+            
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self = self else { return }
                 
-                // Directly encrypt and place it into the app's secret directory
                 let originalExtension = (self.receivedFileName as NSString).pathExtension
                 let finalExtension = originalExtension.isEmpty ? "data" : originalExtension
                 let newSecureURL = FileManagerHelper.generateNewFileURL(originalExtension: finalExtension)
-                
-                let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".dat")
-                try finalData.write(to: tempUrl)
                 
                 KeyManager.createAndSaveKey()
                 let success = KeyManager.encryptFile(inputURL: tempUrl, outputURL: newSecureURL)
                 try? FileManager.default.removeItem(at: tempUrl)
                 
-                if success {
-                    self.receivedFileUrl = newSecureURL
-                    NotificationCenter.default.post(name: Notification.Name("P2PFileReceived"), object: nil)
-                } else {
-                    self.errorMessage = "ファイルの保存(暗号化)に失敗しました"
+                DispatchQueue.main.async {
+                    if success {
+                        self.receivedFileUrl = newSecureURL
+                        NotificationCenter.default.post(name: Notification.Name("P2PFileReceived"), object: nil)
+                    } else {
+                        self.errorMessage = "ファイルの保存(暗号化)に失敗しました"
+                    }
                 }
-            } catch {
-                print("Failed to reassemble or decrypt: \(error)")
-                self.errorMessage = "データの復号に失敗しました: \(error.localizedDescription)"
             }
         }
-        self.receivedChunks.removeAll()
-        self.receivedDataSize = 0
     }
     
     func webRTCManager(_ manager: WebRTCManager, shouldSendIceCandidate candidateDict: [String: Any]) {
@@ -216,8 +251,7 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
     
     // MARK: - Sending files
     func sendFile(url: URL) {
-        guard let data = try? Data(contentsOf: url),
-              let secureFileManager = self.secureFileManager,
+        guard let secureFileManager = self.secureFileManager,
               let webrtcManager = self.webrtcManager else { return }
         
         self.isSending = true
@@ -226,8 +260,12 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
         
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                let chunks = try secureFileManager.encryptAndChunk(data: data)
-                let totalSize = chunks.reduce(0) { $0 + $1.count }
+                guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+                      let totalSizeNumber = attrs[.size] as? NSNumber else {
+                    throw NSError(domain: "WebRTC", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to get file size"])
+                }
+                
+                let totalSize = totalSizeNumber.intValue
                 
                 let metadata: [String: Any] = [
                     "type": "metadata",
@@ -246,31 +284,54 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
                     }
                 }
                 
+                let fileHandle = try FileHandle(forReadingFrom: url)
+                defer { try? fileHandle.close() }
+                
                 var sentSize = 0
-                for chunk in chunks {
-                    // Throttle if the DataChannel buffer gets too large (e.g. > 16KB)
-                    while webrtcManager.bufferedAmount > 16384 * 4 {
-                        Thread.sleep(forTimeInterval: 0.05)
+                var lastUIUpdateTime = Date().timeIntervalSince1970
+                let chunkSize = 16384 // 16KB
+                
+                var isEOF = false
+                while !isEOF {
+                    try autoreleasepool {
                         if self.connectionState != .connected && self.connectionState != .completed {
                             throw NSError(domain: "WebRTC", code: 1, userInfo: [NSLocalizedDescriptionKey: "Connection lost"])
                         }
-                    }
-                    
-                    var chunkSuccess = false
-                    while !chunkSuccess {
-                        if self.connectionState != .connected && self.connectionState != .completed {
-                            throw NSError(domain: "WebRTC", code: 1, userInfo: [NSLocalizedDescriptionKey: "Connection lost"])
+                        
+                        guard let chunk = try fileHandle.read(upToCount: chunkSize), !chunk.isEmpty else {
+                            isEOF = true
+                            return
                         }
-                        chunkSuccess = webrtcManager.sendData(chunk)
-                        if !chunkSuccess { Thread.sleep(forTimeInterval: 0.05) }
+                        
+                        let encryptedChunk = try secureFileManager.encrypt(chunk: chunk)
+                        
+                        while webrtcManager.bufferedAmount > 2 * 1024 * 1024 {
+                            Thread.sleep(forTimeInterval: 0.01)
+                            if self.connectionState != .connected && self.connectionState != .completed {
+                                throw NSError(domain: "WebRTC", code: 1, userInfo: [NSLocalizedDescriptionKey: "Connection lost"])
+                            }
+                        }
+                        
+                        var chunkSuccess = false
+                        while !chunkSuccess {
+                            if self.connectionState != .connected && self.connectionState != .completed {
+                                throw NSError(domain: "WebRTC", code: 1, userInfo: [NSLocalizedDescriptionKey: "Connection lost"])
+                            }
+                            chunkSuccess = webrtcManager.sendData(encryptedChunk)
+                            if !chunkSuccess { Thread.sleep(forTimeInterval: 0.01) }
+                        }
+                        
+                        sentSize += chunk.count
+                        let progress = Double(sentSize) / Double(totalSize)
+                        
+                        let now = Date().timeIntervalSince1970
+                        if now - lastUIUpdateTime > 0.1 || sentSize == totalSize {
+                            lastUIUpdateTime = now
+                            DispatchQueue.main.async {
+                                self.sendProgress = progress
+                            }
+                        }
                     }
-                    
-                    sentSize += chunk.count
-                    let progress = Double(sentSize) / Double(totalSize)
-                    DispatchQueue.main.async {
-                        self.sendProgress = progress
-                    }
-                    Thread.sleep(forTimeInterval: 0.005)
                 }
                 
                 DispatchQueue.main.async {
@@ -278,7 +339,7 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
                     self.sendProgress = 1.0
                 }
             } catch {
-                print("Failed to encrypt and split data: \(error)")
+                print("Failed to send data: \(error)")
                 DispatchQueue.main.async {
                     self.isSending = false
                 }
