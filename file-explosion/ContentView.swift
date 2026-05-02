@@ -58,6 +58,7 @@ struct ContentView: View {
     @State var showingMultiDeleteConfirm = false
     @State var filesToShare: [URL] = []
     @State var showShareSheet = false
+    @State var showCategoryPickerForBatchDecrypt = false
     
     // MARK: - 認証
     @State var inputPasscode = ""
@@ -521,6 +522,33 @@ extension ContentView {
             enabled: isEnabled,
             threshold: threshold
         )
+    }
+    
+    func batchDecryptByCategory(_ category: Int) {
+        let allTargets = secretFiles.filter { f in
+            switch category {
+            case 0: return f.isImage
+            case 1: return f.isVideo
+            case 2: return f.isPDF
+            default: return !f.isImage && !f.isVideo && !f.isPDF
+            }
+        }
+        let targets = allTargets.filter { !FileManager.default.fileExists(atPath: FileManagerHelper.getCacheURL(for: $0).path) }
+        
+        if targets.isEmpty {
+            showToast(String(localized: "対象ファイルがありません"))
+            return
+        }
+        
+        isProcessing = true; var count = 0
+        processingMessage = LocalizedStringKey("一括解読中... (0/\(targets.count))")
+        DispatchQueue.global(qos: .userInitiated).async {
+            for file in targets {
+                autoreleasepool { _ = KeyManager.decryptFile(inputURL: file.url, outputURL: FileManagerHelper.getCacheURL(for: file)) }
+                DispatchQueue.main.async { count += 1; processingMessage = LocalizedStringKey("一括解読中... (\(count)/\(targets.count))") }
+            }
+            DispatchQueue.main.async { isProcessing = false; refreshFiles() }
+        }
     }
     
     func processSelectedPhotos() {

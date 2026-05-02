@@ -54,11 +54,15 @@
 		};
 		599E7E672F94D24100BBA489 /* file-explosionTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "file-explosionTests";
 			sourceTree = "<group>";
 		};
 		599E7E712F94D24100BBA489 /* file-explosionUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "file-explosionUITests";
 			sourceTree = "<group>";
 		};
@@ -120,6 +124,7 @@
 				599E7E512F94D24000BBA489 /* Sources */,
 				599E7E522F94D24000BBA489 /* Frameworks */,
 				599E7E532F94D24000BBA489 /* Resources */,
+				BB825425032B2A92EACE194C /* Generate WebRTC dSYM */,
 			);
 			buildRules = (
 			);
@@ -250,6 +255,27 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		BB825425032B2A92EACE194C /* Generate WebRTC dSYM */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate WebRTC dSYM";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${ACTION}\" = \"install\" ]; then\n    # Find WebRTC framework in the built products\n    WEBRTC_MAC=\"${BUILT_PRODUCTS_DIR}/WebRTC.framework/Versions/A/WebRTC\"\n    WEBRTC_IOS_1=\"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebRTC.framework/WebRTC\"\n    WEBRTC_IOS_2=\"${BUILT_PRODUCTS_DIR}/PackageFrameworks/WebRTC.framework/WebRTC\"\n    \n    if [ -f \"$WEBRTC_IOS_1\" ]; then\n        WEBRTC_BIN=\"$WEBRTC_IOS_1\"\n    elif [ -f \"$WEBRTC_IOS_2\" ]; then\n        WEBRTC_BIN=\"$WEBRTC_IOS_2\"\n    elif [ -f \"$WEBRTC_MAC\" ]; then\n        WEBRTC_BIN=\"$WEBRTC_MAC\"\n    else\n        # fallback, search\n        WEBRTC_BIN=$(find \"${BUILT_PRODUCTS_DIR}\" -name \"WebRTC\" -type f | grep \"WebRTC.framework\" | head -n 1)\n    fi\n\n    if [ -n \"$WEBRTC_BIN\" ] && [ -f \"$WEBRTC_BIN\" ]; then\n        echo \"Generating dSYM for WebRTC at $WEBRTC_BIN\"\n        dsymutil \"$WEBRTC_BIN\" -o \"${DWARF_DSYM_FOLDER_PATH}/WebRTC.framework.dSYM\"\n    else\n        echo \"WebRTC binary not found for dSYM generation.\"\n        # Not failing the build just printing\n    fi\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		599E7E512F94D24000BBA489 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -326,7 +352,7 @@
 				DEVELOPMENT_TEAM = 5S6LDWUM98;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -393,7 +419,7 @@
 				DEVELOPMENT_TEAM = 5S6LDWUM98;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -435,6 +461,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "file-explosion/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = LimitBox;
@@ -493,6 +520,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "file-explosion/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = LimitBox;
@@ -538,6 +566,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5S6LDWUM98;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MARKETING_VERSION = 1.0;
@@ -557,6 +586,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5S6LDWUM98;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MARKETING_VERSION = 1.0;
@@ -575,6 +605,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5S6LDWUM98;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.file-explosionUITests";
@@ -592,6 +623,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5S6LDWUM98;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.file-explosionUITests";

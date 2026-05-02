@@ -132,6 +132,14 @@ extension ContentView {
                 }
                 .padding(.horizontal)
                 
+                SectionHeader(title: "パフォーマンス")
+                Button(action: { showCategoryPickerForBatchDecrypt = true }) {
+                    Label("カテゴリを指定して一括解読", systemImage: "bolt.fill")
+                        .frame(maxWidth: .infinity).padding()
+                        .background(Color.blue).foregroundColor(.white).cornerRadius(10)
+                }
+                .padding(.horizontal)
+                
                 SectionHeader(title: "極秘データの追加")
                 HStack(spacing: 15) {
                     PhotosPicker(
@@ -159,6 +167,13 @@ extension ContentView {
                 .padding(.horizontal)
             }
             .padding(.vertical)
+            .confirmationDialog("解読するカテゴリを選択", isPresented: $showCategoryPickerForBatchDecrypt, titleVisibility: .visible) {
+                Button("写真") { batchDecryptByCategory(0) }
+                Button("動画") { batchDecryptByCategory(1) }
+                Button("PDF") { batchDecryptByCategory(2) }
+                Button("他") { batchDecryptByCategory(3) }
+                Button("キャンセル", role: .cancel) {}
+            } message: { Text("選択したカテゴリの極秘ファイルを一括で解読して表示を高速化します。") }
         }
     }
     

@@ -1,9 +1,7 @@
 {
   "sourceLanguage": "ja",
   "strings": {
-    "": {
-      "localizations": {}
-    },
+    "": {},
     "・%lld項目を選択中": {
       "localizations": {
         "en": {
@@ -577,6 +575,16 @@
         }
       }
     },
+    "カテゴリを指定して一括解読": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batch Decrypt by Category"
+          }
+        }
+      }
+    },
     "キャンセル": {
       "localizations": {
         "en": {
@@ -846,7 +854,6 @@
       }
     },
     "パフォーマンス": {
-      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -998,8 +1005,17 @@
         }
       }
     },
+    "一括解読するカテゴリを選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select Category for Batch Decrypt"
+          }
+        }
+      }
+    },
     "一括解読中... (%lld/%lld)": {
-      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1010,7 +1026,6 @@
       }
     },
     "一括解読中... (0/%lld)": {
-      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1273,16 +1288,16 @@
     },
     "受信中... %@ / %@": {
       "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "new",
-            "value": "受信中... %1$@ / %2$@"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Receiving... %1$@ / %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "new",
+            "value": "受信中... %1$@ / %2$@"
           }
         }
       }
@@ -1323,6 +1338,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Change"
+          }
+        }
+      }
+    },
+    "対象ファイルがありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No target files found"
           }
         }
       }
@@ -1807,6 +1832,16 @@
         }
       }
     },
+    "解読するカテゴリを選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select category to decrypt"
+          }
+        }
+      }
+    },
     "解読中...": {
       "localizations": {
         "en": {
@@ -2027,6 +2062,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Select"
+          }
+        }
+      }
+    },
+    "選択したカテゴリのファイルをすべて書き出します。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export all files in the selected category."
+          }
+        }
+      }
+    },
+    "選択したカテゴリの極秘ファイルを一括で解読して表示を高速化します。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrypts all secret files in the selected category at once to speed up display."
           }
         }
       }

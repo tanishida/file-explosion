@@ -517,7 +517,11 @@ struct FileTransferView: View {
                         }
                     }
                     .padding()
+#if os(iOS)
                     .background(Color(UIColor.secondarySystemBackground))
+#else
+                    .background(Color(NSColor.controlBackgroundColor))
+#endif
                     .cornerRadius(12)
                     .padding(.horizontal)
                     .onChange(of: viewModel.sendProgress) { _ in
@@ -623,7 +627,11 @@ struct FileTransferView: View {
                         }
                     }
                     .padding()
+#if os(iOS)
                     .background(Color(UIColor.secondarySystemBackground))
+#else
+                    .background(Color(NSColor.controlBackgroundColor))
+#endif
                     .cornerRadius(12)
                     .padding(.horizontal)
                 }

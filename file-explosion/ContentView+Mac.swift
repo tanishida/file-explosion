@@ -143,6 +143,15 @@ extension ContentView {
             .padding(.bottom, 24)
             .animation(.spring(), value: macToastMessages.count)
         }
+        .confirmationDialog("一括解読するカテゴリを選択", isPresented: $showCategoryPickerForBatchDecrypt, titleVisibility: .visible) {
+            Button("写真") { batchDecryptByCategory(0) }
+            Button("動画") { batchDecryptByCategory(1) }
+            Button("PDF") { batchDecryptByCategory(2) }
+            Button("その他") { batchDecryptByCategory(3) }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("選択したカテゴリのファイルをすべて書き出します。")
+        }
     }
     
     // MARK: - ダッシュボード（ホーム）
@@ -226,6 +235,12 @@ extension ContentView {
                             icon: "doc.badge.plus",
                             color: .indigo
                         ) { showFileImporter = true }
+                        
+                        macActionButton(
+                            label: "カテゴリを指定して一括解読",
+                            icon: "bolt.fill",
+                            color: .orange
+                        ) { showCategoryPickerForBatchDecrypt = true }
                         
                         macActionButton(
                             label: "デバイス間転送 (P2P)",
@@ -670,6 +685,9 @@ extension ContentView {
                     Label("ファイルを追加", systemImage: "doc.badge.plus")
                 }
                 Divider()
+                Button { showCategoryPickerForBatchDecrypt = true } label: {
+                    Label("カテゴリを指定して一括解読", systemImage: "bolt.fill")
+                }
                 Button { decryptCurrentFolderFiles() } label: {
                     Label("フォルダ内を全て書き出し", systemImage: "lock.open.fill")
                 }
