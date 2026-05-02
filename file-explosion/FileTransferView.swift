@@ -32,6 +32,7 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
     private var receivedChunks: [Data] = []
     
     override init() {
+        self.roomId = DeviceManager.shared.myDeviceId
         self.secureKeyManager = SecureKeyManager()
         if let keyManager = self.secureKeyManager {
             self.secureFileManager = SecureFileManager(keyManager: keyManager)
@@ -59,6 +60,10 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
     
     func disconnect() {
         signalingManager?.disconnect()
+    }
+    
+    func resetRoomId() {
+        self.roomId = DeviceManager.shared.myDeviceId
     }
     
     func joinRoom() {
@@ -279,7 +284,9 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
 struct FileTransferView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = FileTransferViewModel()
+    @StateObject private var deviceManager = DeviceManager.shared
     @State private var showFilePicker = false
+    @State private var showAddDeviceSheet = false
     @State private var transferMode: TransferMode = .send
     @State private var selectedFile: SecretFile?
     
@@ -291,19 +298,61 @@ struct FileTransferView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
+                // My Device ID Card
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("あなたの端末ID:")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    HStack {
+                        Text(deviceManager.myDeviceId)
+                            .font(.system(.subheadline, design: .monospaced))
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        
+                        Spacer()
+                        
+                        Button {
+#if os(iOS)
+                            UIPasteboard.general.string = deviceManager.myDeviceId
+#else
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(deviceManager.myDeviceId, forType: .string)
+#endif
+                        } label: {
+                            Image(systemName: "doc.on.doc")
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                    .padding(10)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                }
+                .padding(.horizontal)
+                
                 Picker("モード", selection: $transferMode) {
                     Text("送信(送る)").tag(TransferMode.send)
                     Text("受信(受け取る)").tag(TransferMode.receive)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
+                .onChange(of: transferMode) { _ in
+                    if transferMode == .send {
+                        viewModel.resetRoomId()
+                    } else {
+                        viewModel.roomId = ""
+                    }
+                }
                 
                 if transferMode == .send {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("1. Room IDを設定して待機")
+                        Text("1. 自分の端末IDで待機")
                         HStack {
-                            TextField("Room ID", text: $viewModel.roomId)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            Text("待機ID: \(viewModel.roomId)")
+                                .font(.caption)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            
+                            Spacer()
                             
                             Button("待機") {
                                 viewModel.joinRoom()
@@ -382,10 +431,34 @@ struct FileTransferView: View {
                     .padding(.horizontal)
                 } else {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("1. 相手のRoom IDを入力して接続")
+                        Text("1. 相手の端末を選択して接続")
+                        
+                        if !deviceManager.savedDevices.isEmpty {
+                            Menu {
+                                ForEach(deviceManager.savedDevices) { device in
+                                    Button(device.name) {
+                                        viewModel.roomId = device.deviceId
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(viewModel.roomId.isEmpty ? "保存した端末から選択" : "入力済み (変更可)")
+                                    Spacer()
+                                    Image(systemName: "chevron.up.chevron.down")
+                                }
+                                .padding(8)
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                        }
+                        
                         HStack {
-                            TextField("Room ID", text: $viewModel.roomId)
+                            TextField("相手の端末ID", text: $viewModel.roomId)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .disableAutocorrection(true)
+#if os(iOS)
+                                .autocapitalization(.none)
+#endif
                             
                             Button("接続") {
                                 viewModel.joinRoomAndOffer()
@@ -393,6 +466,12 @@ struct FileTransferView: View {
                             .buttonStyle(.borderedProminent)
                             .disabled(viewModel.roomId.isEmpty || viewModel.isConnected)
                         }
+                        
+                        Button("+ 端末IDを新しく保存する") {
+                            showAddDeviceSheet = true
+                        }
+                        .font(.caption)
+                        .padding(.top, -4)
                         
                         Text("2. 受信待機")
                         if viewModel.isConnected {
@@ -481,6 +560,9 @@ struct FileTransferView: View {
             SecretFilePickerView { file in
                 self.selectedFile = file
             }
+        }
+        .sheet(isPresented: $showAddDeviceSheet) {
+            AddDeviceView()
         }
     }
     
@@ -571,6 +653,43 @@ struct SecretFilePickerView: View {
             }
             .onAppear {
                 secretFiles = FileManagerHelper.getAllSecretFiles()
+            }
+        }
+    }
+}
+
+struct AddDeviceView: View {
+    @Environment(\.dismiss) var dismiss
+    @State private var deviceName: String = ""
+    @State private var deviceId: String = ""
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("端末情報")) {
+                    TextField("端末の名前 (例: 自分のiPhone)", text: $deviceName)
+                    TextField("端末ID", text: $deviceId)
+#if os(iOS)
+                        .autocapitalization(.none)
+#endif
+                        .disableAutocorrection(true)
+                }
+            }
+            .navigationTitle("端末を保存")
+#if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+#endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        DeviceManager.shared.addSavedDevice(name: deviceName, deviceId: deviceId)
+                        dismiss()
+                    }
+                    .disabled(deviceName.isEmpty || deviceId.isEmpty)
+                }
             }
         }
     }
