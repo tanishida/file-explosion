@@ -50,7 +50,7 @@ class FileTransferViewModel: NSObject, ObservableObject, SignalingManagerDelegat
         // Setup Signaling with configurable URL
         let defaultUrl = "wss://echo.websocket.events" // Reverted back to a safe default placeholder since user is using an environment variable
         let envUrl = ProcessInfo.processInfo.environment["SIGNALING_SERVER_URL"]
-        let plistUrl = Bundle.main.object(forInfoDictionaryKey: "SIGNALING_SERVER_URL") as? String
+        let plistUrl = Bundle.main.object(forInfoDictionaryKey: "SignalingServerURL") as? String
         
         let urlString = envUrl ?? plistUrl ?? defaultUrl
         
