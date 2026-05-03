@@ -11,7 +11,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>アプリ内で安全に動画を撮影（録音）してシークレット領域に保存するためにマイクを使用します。</string>
 	<key>SignalingServerURL</key>
-	<string>$(SIGNALING_SERVER_URL_VALUE)</string>
+	<string>$(SIGNALING_SERVER_URL)</string>
 	<key>TURN_SERVER_PASSWORD</key>
 	<string>super_secret_password_123</string>
 	<key>TURN_SERVER_URL</key>

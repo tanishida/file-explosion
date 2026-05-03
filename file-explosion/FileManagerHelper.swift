@@ -139,3 +139,68 @@ class FileManagerHelper {
         }
     }
 }
+
+class ShareExtensionManager {
+    static let shared = ShareExtensionManager()
+    
+    // 指定されたApp Group ID
+    private let groupIdentifier = "group.com.kawase.hiroaki.limitbox"
+    
+    /// メインアプリ起動時（またはアクティブ時）にInboxフォルダを検知して処理を行う
+    func processSharedFiles() {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupIdentifier) else {
+            print("App GroupのコンテナURL取得に失敗しました。")
+            return
+        }
+        
+        let inboxURL = containerURL.appendingPathComponent("Inbox")
+        if !FileManager.default.fileExists(atPath: inboxURL.path) {
+            return
+        }
+        
+        do {
+            let files = try FileManager.default.contentsOfDirectory(at: inboxURL, includingPropertiesForKeys: nil)
+            var hasProcessed = false
+            
+            for fileURL in files {
+                if fileURL.lastPathComponent.hasPrefix(".") { continue }
+                
+                let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileURL.lastPathComponent)
+                if FileManager.default.fileExists(atPath: tempURL.path) {
+                    try FileManager.default.removeItem(at: tempURL)
+                }
+                
+                // メモリ節約のため moveItem を使用
+                try FileManager.default.moveItem(at: fileURL, to: tempURL)
+                
+                let ext = tempURL.pathExtension
+                let finalURL = FileManagerHelper.generateNewFileURL(originalExtension: ext)
+                
+                let success = KeyManager.encryptFile(inputURL: tempURL, outputURL: finalURL)
+                
+                if success {
+                    try? FileManager.default.removeItem(at: tempURL)
+                    hasProcessed = true
+                    print("ファイルの移動および暗号化に成功しました: \(finalURL)")
+                } else {
+                    print("暗号化に失敗しました")
+                }
+            }
+            
+            // 念のため、エラーで残ったファイルや処理対象外だったゴミファイルを含め、Inboxの中身を全削除してクリーンにする
+            if let remainings = try? FileManager.default.contentsOfDirectory(at: inboxURL, includingPropertiesForKeys: nil) {
+                for item in remainings {
+                    try? FileManager.default.removeItem(at: item)
+                }
+            }
+            
+            if hasProcessed {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: NSNotification.Name("FilesDidUpdate"), object: nil)
+                }
+            }
+        } catch {
+            print("Inboxファイルの処理中にエラーが発生しました: \(error)")
+        }
+    }
+}
