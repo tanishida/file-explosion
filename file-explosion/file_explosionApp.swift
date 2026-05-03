@@ -55,7 +55,9 @@ struct file_explosionApp: App {
         WindowGroup {
             ContentView()
         }.onChange(of: scenePhase) { _, phase in
-            if phase == .background {
+            if phase == .active {
+                ShareExtensionManager.shared.processSharedFiles()
+            } else if phase == .background {
                 StorageCleaner.clearAllTempAndCacheData()
             }
         }
